@@ -1,0 +1,66 @@
+function textJustification(words, len) {
+  'use strict';
+  let line = words[0];
+
+  // Establish lines
+  const lines = words.reduce((acc, word) => {
+    if (line === word) return acc;
+    else if (`${line} ${word}`.length <= len) {
+      line += ` ${word}`;
+      return acc;
+    }
+
+    acc.push(line);
+    line = word;
+
+    return acc;
+  }, []);
+
+  lines.push(line);
+
+  // Pad lines
+  return lines.map((line, i) => {
+    const numGaps = (/( )/g.exec(line) || []).length;
+    const numSpacesNeeded = len - line.length;
+    // Pad if this line has only one word, or is the last line
+    if (numGaps === 0 || i === lines.length - 1) return line + ' '.repeat(numSpacesNeeded);
+
+    let numReplacements = 0;
+    while (line.length < len) {
+      line = line.split(' ').map((word, j) => {
+        if (numReplacements < numSpacesNeeded && j > 0) {
+          word = ` ${word}`;
+          numReplacements += 1;
+        }
+
+        return word;
+      }).join(' ');
+    }
+
+    return line;
+  });
+}
+
+let words = ['This', 'is', 'an', 'example', 'of', 'text', 'justification.'];
+let L = 16;
+
+console.log(textJustification(words, L));
+console.log(textJustification([''], L));
+
+words = ['four', 'butt', 'a', 'la', 'the', 'moss'];
+L = 4;
+console.log(textJustification(words, L));
+
+words = ["Extra",
+ "spaces",
+ "between",
+ "words",
+ "should",
+ "be",
+ "distributed",
+ "as",
+ "evenly",
+ "as",
+ "possible"];
+ L = 20;
+ console.log(textJustification(words, L));
