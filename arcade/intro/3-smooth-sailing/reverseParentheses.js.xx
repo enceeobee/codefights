@@ -1,0 +1,37 @@
+const assert = require('assert');
+
+function reverseParentheses(s) {
+  'use strict';
+  const regex = /\((.*)\)/i;
+  const blockedChars = [];
+  const removeParens = str => str.replace(/\(|\)/g, '');
+  const revStr = (str, rpl) => removeParens(str.replace(`(${rpl})`, rpl.split('').reverse().join('')));
+
+  console.log(revStr('(too)');
+
+  let match;
+
+  if ((match = regex.exec(s)) === null) return s;
+
+  while (match !== null) {
+    blockedChars.push(match[0]);
+    match = regex.exec(match[1]);
+  }
+
+  console.log(blockedChars);
+
+  return '';
+  // return removeParens(s.replace(regex, blockedChars[0].split('').reverse().join('')));
+}
+
+let s = 'a(bc)de';
+// console.log(reverseParentheses(s)); // acbde
+s = 'a(bcdefghijkl(mno)p)q';
+// console.log(reverseParentheses(s)); // 'apmnolkjihgfedcbq'
+s = 'co(de(fight)s)';
+// console.log(reverseParentheses(s)); // 'cosfighted'
+
+s = 'The ((quick (brown) (fox) jumps over the lazy) dog)';
+// The god quick xof( )nworb jumps over the lazy
+console.log(reverseParentheses(s));
+// assert.equal(reverseParentheses(s), 'The god quick nworb xof jumps over the lazy');

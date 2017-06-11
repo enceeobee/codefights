@@ -1,9 +1,9 @@
 const assert = require('assert');
 
-// To be fair, I was interrupted, then went out for the evening!
+// haha my time. I got busy this week :)
 function spamClusterization(requests, IDs, threshold) {
   'use strict';
-  const jaccards = {};
+  const scores = {};
 
   let returnIds = [];
 
@@ -12,31 +12,41 @@ function spamClusterization(requests, IDs, threshold) {
   const getJaccard = (set1, set2) => {
     const union = [... new Set(set1.concat(set2))].length;
     const intersection = set1.length + set2.length - union;
-
-    // console.log('intersection', intersection, 'union', union);
-
     return (union === 0) ? 0 : intersection / union;
   };
 
   // Calculate Jaccard index
-  let theseJacs;
   for (let i = 0; i < requests.length; i += 1) {
-    theseJacs = [];
     for (let j = i + 1; j < requests.length; j += 1) {
       if (getJaccard(words[i], words[j]) >= threshold) {
-        // if (!theseJacs.includes(IDs[i])) theseJacs.push(IDs[i]);
-        // theseJacs.push(IDs[j]);
-        jaccards[IDs[i]] = (jaccards[IDs[i]] || []).concat(IDs[j]);
+        let doAdd = true;
+        Object.keys(scores).forEach((key) => {
+          if (scores[key].includes(IDs[i])) {
+            scores[key].push(IDs[j]);
+            doAdd = false;
+          }
+        });
+
+        if (doAdd) scores[IDs[j]] = (scores[IDs[j]] || []).concat(IDs[i]);
       }
     }
-    // returnIds = returnIds.concat([theseJacs.sort((a, b) => a - b)]);
   }
 
-  console.dir(jaccards);
+  Object.keys(scores).forEach((key) => {
+    scores[key].forEach((j) => {
+      if (scores[j]) {
+        scores[key] = scores[key].concat(scores[j]);
+        scores[j] = [];
+      }
+    });
+  });
 
-  Object.keys(jaccards).forEach((jac, i) => {
-    // returnIds.push([jac, jaccards[jac]].concat(jaccards[jac] || null));
-    returnIds.push([Number(jac), jaccards[jac]]);
+  Object.keys(scores).forEach((key) => {
+    if (scores[key].length > 0) {
+      returnIds.push([Number(key)]
+        .concat(scores[key])
+        .sort((a, b) => a - b));
+    }
   });
 
   return returnIds;
@@ -58,7 +68,28 @@ IDs = [374, 2845, 83, 1848, 1837, 1500];
 threshold = 0.5;
 expected = [[83, 1500], [374, 1837, 1848]];
 actual = spamClusterization(requests, IDs, threshold);
+// assert.deepEqual(actual, expected);
 
-assert.equal(actual, expected);
+requests = ['A', 'C', 'A C'];
+IDs = [374, 2845, 83];
+threshold = 0.5;
+expected = [[83,374,2845]];
+actual = spamClusterization(requests, IDs, threshold);
+// assert.deepEqual(actual, expected);
+
+requests = ['A', 'C', 'B', 'D', 'A C B D'];
+IDs = [0, 1, 2, 3, 4];
+threshold = 0.2;
+expected = [[0, 1, 2, 3, 4]];
+actual = spamClusterization(requests, IDs, threshold);
+assert.deepEqual(actual, expected);
+
+// I think this is skipping the first element. See this test...
+requests = ['A C B D', 'A', 'C', 'B', 'D'];
+IDs = [0, 1, 2, 3, 4];
+threshold = 0.2;
+expected = [[0, 1, 2, 3, 4]];
+actual = spamClusterization(requests, IDs, threshold);
+assert.deepEqual(actual, expected);
 
 console.log('All tests passed.');

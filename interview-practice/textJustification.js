@@ -1,211 +1,117 @@
+'use strict';
 const assert = require('assert');
 
-function textJustification(words, L) {
+function textJustification(words, len) {
   'use strict';
-  const lines = [];
 
-  let line = '';
-  words.forEach(word => {
-    if (line === '') {
+  let line = words[0].trim();
+
+  if (words.length === 1) return [line += ' '.repeat(len - line.length)];
+
+  const lines = words.map(w => w.trim()).reduce((acc, word) => {
+    if (line === word) return acc;
+    // Handle empty strings
+    if (line.length === 0 && (line + word).length <= len) {
       line = word;
-    } else if ((line + word).length < L) {
-      line = `${line} ${word}`.trim();
-    } else {
-      lines.push(line);
-      line = word;
+      return acc;
     }
-  });
+    if (line.length > 0 && word.length > 0 && (line + word).length < len) {
+      line += ` ${word}`;
+      return acc;
+    }
 
-  // Add any remaining lines
-  lines.push(line.trim());
-
-  // Now, justify
-  const justified = lines.map((line, i) => {
-    // Handle single words, or last line
-    if (!/ /.test(line) || i === lines.length - 1) return line + ' '.repeat(L - line.length);
-
-    let spaceReplace = ' ';
+    // Our line is full. Let's pad it
+    let spaces = ' ';
     let replaceRegex;
 
-    while (line.length < L) {
-      replaceRegex = new RegExp(`\\S${spaceReplace}\\S`);
+    while (line.length < len) {
+      replaceRegex = new RegExp(`[\\S]${spaces}[\\S]`);
 
-      if (!replaceRegex.test(line)) {
-        spaceReplace += ' ';
-        replaceRegex = new RegExp(`\\S${spaceReplace}\\S`);
-      }
-      line = line.replace(replaceRegex, match => match.replace(spaceReplace, `${spaceReplace} `));
+      if (replaceRegex.test(line)) line = line.replace(replaceRegex, match => match.replace(spaces, spaces + ' '));
+      else if (line.indexOf(' ') !== -1) spaces += ' ';
+      else line += ' '.repeat(len - line.length);
     }
-    return line;
-  });
 
-  return justified;
+    acc.push(line);
+    line = word;
+
+    return acc;
+  }, []);
+
+  // Grab that last word, unless the last line is an empty space
+  if (words[words.length - 1] !== '') lines.push(line + ' '.repeat(len - line.length));
+
+  return lines;
 }
 
-let words = ['This', 'is', 'an', 'example', 'of', 'text', 'justification.'];
-let L = 16;
-let expected = ["This    is    an",
-                "example  of text",
-                "justification.  "];
-let actual = textJustification(words, L);
-assert.deepEqual(actual, expected);
+let words = ["This",
+  "is",
+  "an",
+  "example",
+  "of",
+  "text",
+  "justification."];
+console.log(textJustification(words, 16));
 
-// console.log(textJustification(words, L));
-// console.log(textJustification([''], L));
+words = ['just', 'too', 'short'];
+console.log(textJustification(words, 6));
 
-words = ["Two", "words."]
-L =11;
-expected = ["Two words. "];
-actual = textJustification(words, L);
-// assert.deepEqual(actual, expected);
+words = ['just'];
+console.log(textJustification(words, 7));
 
+words = [''];
+console.log(textJustification(words, 2));
 
-words = ['four', 'butt', 'a', 'la', 'the', 'moss'];
-L = 4;
-// console.log(textJustification(words, L));
-expected =  ['four', 'butt', 'a la', 'the ', 'moss' ];
-actual = textJustification(words, L);
-// assert.deepEqual(actual, expected);
+words = ['', 'empty', '', 'words'];
+console.log(textJustification(words, 5));
 
-
-words = ["Two",
- "words."];
-L = 10;
-expected = ["Two words."];
-actual = textJustification(words, L);
-assert.deepEqual(actual, expected);
-
+words = ['', 'empty', ''];
+console.log(textJustification(words, 5));
+words = ['', 'empty8', ''];
+console.log(textJustification(words, 8));
 
 words = ["Two",
- "words."];
-L = 9;
-expected = ["Two      ",
- "words.   "];
-actual = textJustification(words, L);
-assert.deepEqual(actual, expected);
-
-
-words = ["a",
- "b",
- "b",
- "longword"];
-L = 8;
-expected = ["a   b  b",
- "longword"];
-actual = textJustification(words, L);
-assert.deepEqual(actual, expected);
-
+  "words."];
+console.log(textJustification(words, 11));
 
 words = ["vba",
- "gaff",
- "ye",
- "gs",
- "cthj",
- "hf",
- "vetjj",
- "jm",
- "k",
- "f",
- "cgbf",
- "zzz"];
-L = 8;
-expected = ["vba gaff",
- "ye    gs",
- "cthj  hf",
- "vetjj jm",
- "k f cgbf",
- "zzz     "];
-actual = textJustification(words, L);
-assert.deepEqual(actual, expected);
-
-
+  "gaff",
+  "ye",
+  "gs",
+  "cthj",
+  "hf",
+  "vetjj",
+  "jm",
+  "k",
+  "f",
+  "cgbf",
+  "zzz"];
+console.log(textJustification(words, 8));
 words = ["Given",
- "an",
- "array",
- "of",
- "words",
- "and",
- "a",
- "length"];
-L = 9;
-expected = ["Given  an",
- "array  of",
- "words and",
- "a length "];
-actual = textJustification(words, L);
-assert.deepEqual(actual, expected);
-
+  "an",
+  "array",
+  "of",
+  "words",
+  "and",
+  "a",
+  "length"];
+console.log(textJustification(words, 9));
 words = ["Extra",
- "spaces",
- "between",
- "words",
- "should",
- "be",
- "distributed",
- "as",
- "evenly",
- "as",
- "possible"];
- L = 20;
-//  console.log(textJustification(words, L));
-expected = [ 'Extra spaces between',
-  'words    should   be',
-  'distributed       as',
-  'evenly as possible  ' ];
-actual = textJustification(words, L);
-assert.deepEqual(actual, expected);
+  "spaces",
+  "between",
+  "words",
+  "should",
+  "be",
+  "distributed",
+  "as",
+  "evenly",
+  "as",
+  "possible"];
+console.log(textJustification(words, 20));
 
+assert.deepEqual(textJustification(words, 20),
+  ["Extra spaces between",
+   "words    should   be",
+   "distributed       as",
+   "evenly as possible  "]);
 
-words = [""];
-L = 2;
-expected = ["  "];
-actual = textJustification(words, L);
-assert.deepEqual(actual, expected);
-
-
-words = ["a"];
-L = 1;
-expected = ["a"];
-actual = textJustification(words, L);
-assert.deepEqual(actual, expected);
-
-
-words = ["a"];
-L = 2;
-expected = ["a "];
-actual = textJustification(words, L);
-assert.deepEqual(actual, expected);
-
-
-words = ["a",
- "b",
- "c",
- "d",
- "e"];
-L = 1;
-expected = ["a",
- "b",
- "c",
- "d",
- "e"];
-actual = textJustification(words, L);
-assert.deepEqual(actual, expected);
-
-
-words = ["a",
- "b",
- "c",
- "d",
- "e"];
-L = 3;
-expected = ["a b",
- "c d",
- "e  "];
-actual = textJustification(words, L);
-assert.deepEqual(actual, expected);
-
-
-words = ['fuck'];
-L =
-
-console.log('All tests passed');
