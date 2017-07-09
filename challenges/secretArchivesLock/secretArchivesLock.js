@@ -1,141 +1,57 @@
 const assert = require('assert');
 
-function moveRight(lock) {
-  // AB.. = ..AB
-  const newLock = lock.map((row) => {
+function moveHorizontal(lock, direction) {
+  return lock.map((row) => {
     const rowLetters = row.replace(/\./g, '');
-    return '.'.repeat(row.length - rowLetters.length) + rowLetters;
-  });
 
-  return newLock;
-}
-
-function moveDown(lock) {
-  /**
-   * ....
-   * ..AB
-   * ...C
-   * ....
-   * =
-   * ....
-   * ....
-   * ...B
-   * ..AC
-   */
-  const newLock = lock.map(row => row.split(''))
-
-  let availableRow;
-
-  for (let col = lock[0].length - 1; col >= 0; col -= 1) {
-    // When we start a new column, reset availableRow
-    availableRow = -1;
-
-    for (let row = lock.length - 1; row >= 0; row -= 1) {
-      // If we find a dot, and this row is higher than the current available row, we have a new available row
-      if (lock[row][col] === '.') {
-        availableRow = Math.max(availableRow, row);
-      }
-      // If we find a letter and have an available row, do stuff
-      else if (availableRow > -1) {
-        // console.log('placing', lock[row][col], 'at', availableRow, ',', col);
-        newLock[availableRow][col] = lock[row][col];
-        newLock[row][col] = '.';
-        availableRow -= 1;
-      }
+    if (direction === 'R') {
+      return '.'.repeat(row.length - rowLetters.length) + rowLetters;
     }
-  }
-  return newLock.map(row => row.join(''));
-}
-
-function moveLeft(lock) {
-  // ..AB = AB..
-  const newLock = lock.map((row) => {
-    const rowLetters = row.replace(/\./g, '');
     return rowLetters + '.'.repeat(row.length - rowLetters.length);
   });
-
-  return newLock;
 }
 
-/*
-function moveUp(lock) {
-  const newLock = lock.map(row => row.split(''))
-
+function moveVertical(lock, direction) {
+  const newLock = lock.map(row => row.split(''));
   let availableRow;
 
-  for (let col = 0; col < lock[0].length; col += 1) {
-    availableRow = (lock[0][col] === '.') ? 0 : null;
+  if (direction === 'D') {
+    for (let col = lock[0].length - 1; col >= 0; col -= 1) {
+      availableRow = -1;
 
-    for (let row = 0; row < lock.length; row += 1) {
-      if (lock[row][col] !== '.') {
-        if (availableRow !== null && row !== availableRow) {
+      for (let row = lock.length - 1; row >= 0; row -= 1) {
+        if (lock[row][col] === '.') {
+          availableRow = Math.max(availableRow, row);
+        } else if (availableRow > -1) {
           newLock[availableRow][col] = lock[row][col];
           newLock[row][col] = '.';
-
-          availableRow = row;
+          availableRow -= 1;
         }
-      } else if (lock[availableRow][col] !== '.') {
-        availableRow = row;
+      }
+    }
+  } else {
+    for (let col = 0; col < lock[0].length; col += 1) {
+      availableRow = lock.length;
+
+      for (let row = 0; row < lock.length; row += 1) {
+        if (lock[row][col] === '.') {
+          availableRow = Math.min(availableRow, row);
+        } else if (availableRow < lock.length) {
+          newLock[availableRow][col] = lock[row][col];
+          newLock[row][col] = '.';
+          availableRow += 1;
+        }
       }
     }
   }
-  return newLock.map(row => row.join(''));
-}
-*/
 
-function moveUp(lock) {
-  const newLock = lock.map(row => row.split(''))
-
-  let availableRow;
-
-  for (let col = 0; col < lock[0].length; col += 1) {
-    // When we start a new column, reset availableRow
-    availableRow = lock.length;
-
-    for (let row = 0; row < lock.length; row += 1) {
-      // If we find a dot, and this row is higher than the current available row, we have a new available row
-      if (lock[row][col] === '.') {
-        availableRow = Math.min(availableRow, row);
-      }
-      // If we find a letter and have an available row, do stuff
-      else if (availableRow < lock.length) {
-        // if (col == 0) {
-        //   console.log('placing', lock[row][col], 'at', availableRow, ',', col);
-        // }
-        newLock[availableRow][col] = lock[row][col];
-        newLock[row][col] = '.';
-        availableRow += 1;
-
-        // if (col == 0) {
-        //   console.log('availableRow', availableRow);
-        // }
-      }
-    }
-  }
   return newLock.map(row => row.join(''));
 }
 
 function secretArchivesLock(lock, actions) {
-
-  // console.log('first lock', lock);
-
   let newLock = lock.slice();
   actions.split('').forEach((action) => {
-    switch(action) {
-      case 'R':
-        newLock = moveRight(newLock);
-        break;
-      case 'D':
-        newLock = moveDown(newLock);
-        break;
-      case 'L':
-        newLock = moveLeft(newLock);
-        break;
-      case 'U':
-        newLock = moveUp(newLock);
-        break;
-    }
-    // console.log('after moving', action, 'new lock', newLock);
+    newLock = ('RL'.includes(action)) ?  moveHorizontal(newLock, action) :  moveVertical(newLock, action);
   });
 
   return newLock;
