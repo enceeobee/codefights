@@ -10,43 +10,37 @@ function moveRight(lock) {
   return newLock;
 }
 
-// const testLock = ['A.B', 
-//  '...', 
-//  'C.D'];
-//  console.log(moveDown(testLock));
-
-// process.exit(0);
-
 function moveDown(lock) {
   /**
    * ....
    * ..AB
    * ...C
    * ....
-   * 
-   * =>
-   * 
+   * =
    * ....
    * ....
    * ...B
    * ..AC
    */
   const newLock = lock.map(row => row.split(''))
-  
+
   let availableRow;
-  
+
   for (let col = lock[0].length - 1; col >= 0; col -= 1) {
-    availableRow = lock.length - 1;
+    // When we start a new column, reset availableRow
+    availableRow = -1;
+
     for (let row = lock.length - 1; row >= 0; row -= 1) {
-      if (lock[row][col] !== '.') {
-        if (row !== availableRow) {
-          // console.log('placing', lock[row][col], 'at', availableRow, ',', col);
-          newLock[availableRow][col] = lock[row][col];
-          newLock[row][col] = '.';
-          availableRow = row;
-        }
-      } else if (lock[availableRow][col] !== '.') {
-        availableRow = row;
+      // If we find a dot, and this row is higher than the current available row, we have a new available row
+      if (lock[row][col] === '.') {
+        availableRow = Math.max(availableRow, row);
+      }
+      // If we find a letter and have an available row, do stuff
+      else if (availableRow > -1) {
+        // console.log('placing', lock[row][col], 'at', availableRow, ',', col);
+        newLock[availableRow][col] = lock[row][col];
+        newLock[row][col] = '.';
+        availableRow -= 1;
       }
     }
   }
@@ -63,16 +57,18 @@ function moveLeft(lock) {
   return newLock;
 }
 
+/*
 function moveUp(lock) {
   const newLock = lock.map(row => row.split(''))
-  
+
   let availableRow;
-  
+
   for (let col = 0; col < lock[0].length; col += 1) {
-    availableRow = 0;
+    availableRow = (lock[0][col] === '.') ? 0 : null;
+
     for (let row = 0; row < lock.length; row += 1) {
       if (lock[row][col] !== '.') {
-        if (row !== availableRow) {
+        if (availableRow !== null && row !== availableRow) {
           newLock[availableRow][col] = lock[row][col];
           newLock[row][col] = '.';
 
@@ -85,10 +81,43 @@ function moveUp(lock) {
   }
   return newLock.map(row => row.join(''));
 }
+*/
+
+function moveUp(lock) {
+  const newLock = lock.map(row => row.split(''))
+
+  let availableRow;
+
+  for (let col = 0; col < lock[0].length; col += 1) {
+    // When we start a new column, reset availableRow
+    availableRow = lock.length;
+
+    for (let row = 0; row < lock.length; row += 1) {
+      // If we find a dot, and this row is higher than the current available row, we have a new available row
+      if (lock[row][col] === '.') {
+        availableRow = Math.min(availableRow, row);
+      }
+      // If we find a letter and have an available row, do stuff
+      else if (availableRow < lock.length) {
+        // if (col == 0) {
+        //   console.log('placing', lock[row][col], 'at', availableRow, ',', col);
+        // }
+        newLock[availableRow][col] = lock[row][col];
+        newLock[row][col] = '.';
+        availableRow += 1;
+
+        // if (col == 0) {
+        //   console.log('availableRow', availableRow);
+        // }
+      }
+    }
+  }
+  return newLock.map(row => row.join(''));
+}
 
 function secretArchivesLock(lock, actions) {
 
-  console.log('first lock', lock);
+  // console.log('first lock', lock);
 
   let newLock = lock.slice();
   actions.split('').forEach((action) => {
@@ -106,7 +135,7 @@ function secretArchivesLock(lock, actions) {
         newLock = moveUp(newLock);
         break;
     }
-    console.log('after moving', action, 'new board', newLock);
+    // console.log('after moving', action, 'new lock', newLock);
   });
 
   return newLock;
@@ -117,178 +146,212 @@ let actions;
 let expected;
 let actual;
 
-lock = ['....', 
- 'AB..', 
- '.C..', 
+lock = [ 'VYEPRFI........',
+  'ZOZURZ.........',
+  'RU.............',
+  'NCESRP.........',
+  'JT.............',
+  'HI.............',
+  'NJEJF..........',
+  '...............',
+  'AKG............',
+  'PWWG...........',
+  'UOBJTGI........',
+  'RJ.............',
+  '...............',
+  'MGCDS..........',
+  'XS.............' ];
+actions = 'UR';
+expected = ["........VYEPRFI",
+ "........ZOZURZI",
+ ".........RUESRP",
+ ".........NCEJFG",
+ "..........JTGGT",
+ "..........HIWJS",
+ "...........NJBD",
+ "............AKC",
+ ".............PW",
+ ".............UO",
+ ".............RJ",
+ ".............MG",
+ ".............XS",
+ "...............",
+ "..............."];
+ actual = secretArchivesLock(lock, actions);
+ assert.deepEqual(actual, expected);
+
+lock = ['....',
+ 'AB..',
+ '.C..',
  '....'];
 actions = 'RDL'
-expected = ['....', 
- '....', 
- 'B...', 
+expected = ['....',
+ '....',
+ 'B...',
  'AC..'];
 actual = secretArchivesLock(lock, actions);
 assert.deepEqual(actual, expected);
 
-lock = ['A.B', 
- '...', 
+lock = ['A.B',
+ '...',
  'C.D'];
 actions = 'DR'
-expected = ['...', 
- '.AB', 
+expected = ['...',
+ '.AB',
  '.CD'];
 actual = secretArchivesLock(lock, actions);
 assert.deepEqual(actual, expected);
 
-lock = ['AB', 
+lock = ['AB',
  'CD'];
 actions = 'RURL'
-expected = ['AB', 
+expected = ['AB',
  'CD'];
 actual = secretArchivesLock(lock, actions);
 assert.deepEqual(actual, expected);
 
-lock = ['A.', 
+lock = ['A.',
  'CD'];
 actions = 'RRRRRRRR'
-expected = ['.A', 
+expected = ['.A',
  'CD'];
 actual = secretArchivesLock(lock, actions);
 assert.deepEqual(actual, expected);
 
-lock = ['AB', 
+lock = ['AB',
  '..'];
 actions = 'DR'
-expected = ['..', 
+expected = ['..',
  'AB'];
 actual = secretArchivesLock(lock, actions);
 assert.deepEqual(actual, expected);
 
-lock = ['U....', 
- '.....', 
- '.....', 
+lock = ['U....',
+ '.....',
+ '.....',
  '.....'];
 actions = 'RDL'
-expected = ['.....', 
- '.....', 
- '.....', 
+expected = ['.....',
+ '.....',
+ '.....',
  'U....'];
 actual = secretArchivesLock(lock, actions);
 assert.deepEqual(actual, expected);
 
-lock = ['.....', 
- '..A..', 
- '.C...', 
+lock = ['.....',
+ '..A..',
+ '.C...',
  '...D.'];
 actions = 'UDR'
-expected = ['.....', 
- '.....', 
- '.....', 
+expected = ['.....',
+ '.....',
+ '.....',
  '..CAD'];
 actual = secretArchivesLock(lock, actions);
 assert.deepEqual(actual, expected);
 
-lock = ['...PD.O..P', 
- '.MF.......', 
- 'Q.....I...', 
- '....JNJ...', 
- '.Y..O.O.J.', 
- 'V..U......', 
- '..J..H....', 
- '....T.J...', 
- 'W.....A.B.', 
- '.P....O.K.'];
+lock = ["...PD.O..P",
+        ".MF.......",
+        "Q.....I...",
+        "....JNJ...",
+        ".Y..O.O.J.",
+        "V..U......",
+        "..J..H....",
+        "....T.J...",
+        "W.....A.B.",
+        ".P....O.K."];
 actions = 'D'
-expected = ['..........', 
- '..........', 
- '..........', 
- '......O...', 
- '......I...', 
- '......J...', 
- '....D.O...', 
- 'QM..J.J.J.', 
- 'VYFPONA.B.', 
- 'WPJUTHO.KP'];
+expected = ["..........",
+            "..........",
+            "..........",
+            "......O...",
+            "......I...",
+            "......J...",
+            "....D.O...",
+            "QM..J.J.J.",
+            "VYFPONA.B.",
+            "WPJUTHO.KP"];
 actual = secretArchivesLock(lock, actions);
 assert.deepEqual(actual, expected);
 
-lock = ['...PD.O..P', 
- '.MF.......', 
- 'Q.....I...', 
- '....JNJ...', 
- '.Y..O.O.J.', 
- 'V..U......', 
- '..J..H....', 
- '....T.J...', 
- 'W.....A.B.', 
+lock = ['...PD.O..P',
+ '.MF.......',
+ 'Q.....I...',
+ '....JNJ...',
+ '.Y..O.O.J.',
+ 'V..U......',
+ '..J..H....',
+ '....T.J...',
+ 'W.....A.B.',
  '.P....O.K.'];
 actions = 'L'
-expected = ['PDOP......', 
- 'MF........', 
- 'QI........', 
- 'JNJ.......', 
- 'YOOJ......', 
- 'VU........', 
- 'JH........', 
- 'TJ........', 
- 'WAB.......', 
+expected = ['PDOP......',
+ 'MF........',
+ 'QI........',
+ 'JNJ.......',
+ 'YOOJ......',
+ 'VU........',
+ 'JH........',
+ 'TJ........',
+ 'WAB.......',
  'POK.......'];
 actual = secretArchivesLock(lock, actions);
 assert.deepEqual(actual, expected);
 
-lock = ['...PD.O..P', 
- '.MF.......', 
- 'Q.....I...', 
- '....JNJ...', 
- '.Y..O.O.J.', 
- 'V..U......', 
- '..J..H....', 
- '....T.J...', 
- 'W.....A.B.', 
+lock = ['...PD.O..P',
+ '.MF.......',
+ 'Q.....I...',
+ '....JNJ...',
+ '.Y..O.O.J.',
+ 'V..U......',
+ '..J..H....',
+ '....T.J...',
+ 'W.....A.B.',
  '.P....O.K.'];
 actions = 'LD'
-expected = ['PD........', 
- 'MF........', 
- 'QI........', 
- 'JN........', 
- 'YO........', 
- 'VUO.......', 
- 'JHJ.......', 
- 'TJO.......', 
- 'WABP......', 
+expected = ['PD........',
+ 'MF........',
+ 'QI........',
+ 'JN........',
+ 'YO........',
+ 'VUO.......',
+ 'JHJ.......',
+ 'TJO.......',
+ 'WABP......',
  'POKJ......'];
 actual = secretArchivesLock(lock, actions);
 assert.deepEqual(actual, expected);
 
-lock = ['V...Y..E.PRFI..', 
- '.ZO...ZU.R.Z...', 
- '.....R.......U.', 
- '..N.CE...S..RP.', 
- '...J........T..', 
- '.......H..I....', 
- '.N.JE.......J.F', 
- '...............', 
- 'A.K..G.........', 
- '...PW.....W.G..', 
- 'UO..BJT.G.I....', 
- '.R.....J.......', 
- '...............', 
- '..M.GCD.....S..', 
+lock = ['V...Y..E.PRFI..',
+ '.ZO...ZU.R.Z...',
+ '.....R.......U.',
+ '..N.CE...S..RP.',
+ '...J........T..',
+ '.......H..I....',
+ '.N.JE.......J.F',
+ '...............',
+ 'A.K..G.........',
+ '...PW.....W.G..',
+ 'UO..BJT.G.I....',
+ '.R.....J.......',
+ '...............',
+ '..M.GCD.....S..',
  '.X.S...........'];
 actions = 'LULLR'
-expected = ['........VYEPRFI', 
- '........ZOZURZI', 
- '.........RUESRP', 
- '.........NCEJFG', 
- '..........JTGGT', 
- '..........HIWJS', 
- '...........NJBD', 
- '............AKC', 
- '.............PW', 
- '.............UO', 
- '.............RJ', 
- '.............MG', 
- '.............XS', 
- '...............', 
+expected = ['........VYEPRFI',
+ '........ZOZURZI',
+ '.........RUESRP',
+ '.........NCEJFG',
+ '..........JTGGT',
+ '..........HIWJS',
+ '...........NJBD',
+ '............AKC',
+ '.............PW',
+ '.............UO',
+ '.............RJ',
+ '.............MG',
+ '.............XS',
+ '...............',
  '...............'];
 actual = secretArchivesLock(lock, actions);
 assert.deepEqual(actual, expected);
