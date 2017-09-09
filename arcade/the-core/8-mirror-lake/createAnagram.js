@@ -19,13 +19,9 @@ function createAnagram (s, t) {
     return acc
   }, {})
 
-  console.log(' ')
-  console.log('sMap', sMap)
-  console.log('tMap', tMap)
-
   while (!isAnagram(sMap, tMap)) {
     Object.keys(sMap).some((currentLetter) => {
-      if (sMap[currentLetter] === tMap[currentLetter]) return false
+      if (sMap[currentLetter] <= tMap[currentLetter]) return false
 
       swapLetter = ''
       Object.keys(tMap)
@@ -37,11 +33,8 @@ function createAnagram (s, t) {
         })
 
       if (!swapLetter) {
-        console.log('NO SWAP LETTER~')
         return false
       }
-
-      console.log('swapping', currentLetter, 'with', swapLetter)
 
       if (!sMap[swapLetter]) sMap[swapLetter] = 0
       sMap[swapLetter] += 1
@@ -87,4 +80,12 @@ test('RACECAR', 'FFFFFFF', 7)
 test('RACECAR', 'OFFFFFF', 7)
 test('RACECAR', 'AFFFFFF', 6)
 test('RACECAR', 'AFFFEFF', 5)
+test('CORN', 'CORC', 1)
+test('CORN', 'COCC', 2)
+test('NORN', 'CORN', 1)
+test('NORN', 'CORC', 2)
+test('CORN', 'CRRC', 2) // CORN -> RORN -> RCRN -> RCRC
+// should be CORN -> CRRN -> CRRC
+// Don't swap C with R because we still need another C
+
 console.log('All tests passed.')
