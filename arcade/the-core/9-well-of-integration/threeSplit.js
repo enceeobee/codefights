@@ -1,124 +1,30 @@
 const assert = require('assert')
 
-/**
- * When to return 1:
- *  - cuts === 2 && i === a.length - 1
- *
- * When to return 0:
- *  - thisSetSum !== subsetSum && i === a.length - 1
- *
- * When to append next value:
- *  - thisSetSum !== subsetSum
- *  - thisSetSum === subsetSum && i < a.length - 1 - The next value might be 0
- *
- * When to increment cuts
- *  - thisSetSum === subsetSum
- */
-
-// function threeSplit (a) {
-  // const getSum = subset => subset.reduce((acc, val) => acc + val)
-  // const subsetSum = getSum(a) / 3
-//   let numSets = 0
-
-//   // console.log(subsetSum)
-//   // const makeCut = (val, subset) => {}
-
-//   // return makeCut(a[0], [])
-
-//   const firstSet = [a[0]]
-//   let thisSetSum = a[0]
-//   let startIndex = 0
-//   let i = 1
-//   let cuts = 0
-
-//   while (i < a.length - 1 && (thisSetSum + a[i + 1 !== thisSetSum])) {
-//     i += 1
-//     if (thisSetSum === subsetSum) cuts++
-//     if (i === a.length - 1 && cuts === 2) {
-//       // restart
-//       i = ++startIndex
-//       cuts = 0
-//     }
-//   }
-
-//   // while (thisSetSum !== subsetSum && i < a.length) {
-//   //   thisSetSum += a[i]
-//   //   // if (thisSetSum === subsetSum) firstSet.push(a[i])
-//   //   console.log('thisSetSum', thisSetSum)
-//   //   firstSet.push(a[i])
-//   //   i += 1
-//   // }
-
-//   /**
-//    * Take a set and check its sum.
-//    * If it doesn't add up to the sum:
-//    *  if at end of set, return 0
-//    *  check again with the next value
-//    * If it does, increase cutNum and check again with the next value as well as not checking the next
-//    *
-//    * if cuts === 2, increase numSets
-//    */
-//   const recursive = (set, cuts, i) => {
-//     if (getSum(set) === subsetSum) {
-//       // cuts += 1 // Don't do this because we might not want to cut until we add the next value
-
-//       if (cuts >= 2) {
-//         if (i === a.length - 1) return 1
-//         return recursive(set.append(a[i + 1], cuts, i + 1))
-//       } else {
-
-//       }
-//     } else {
-//       // remove last value and check sum. If it's good, cuts++
-//       const setCopy = [].append(set)
-//       setCopy.push()
-//       if (getSum(setCopy) === subsetSum) {
-//         cuts++
-//       }
-//       // If at end of the array, FAIL
-//       if (i === a.length - 1) return 0
-//       return recursive(set.append(a[i + 1], cuts, i + 1))
-//     }
-//   }
-
-//   console.log(firstSet)
-
-//   return numSets
-// }
-
-// This works, but is stupid and times out
 function threeSplit (a) {
   const arrSum = (acc, val) => acc + val
-  const getSum = subset => subset.reduce(arrSum)
-  const subsetSum = getSum(a) / 3
+  const subsetSum = a.reduce(arrSum) / 3
   const aLen = a.length
   let numSets = 0
   let cut1 = 1
   let cut2
-  let sum1
-  let sum2
-  let sum3
+  let sum1 = 0
+  let sum2 = 0
 
-  while (cut1 < aLen - 2) {
+  while (cut1 < aLen - 1) {
     cut2 = cut1 + 1
-    sum1 = a.slice(0, cut1).reduce(arrSum)
-    if (sum1 !== subsetSum) {
-      cut1 += 1
-      continue
-    }
+    sum1 += a[cut1 - 1]
 
-    while (cut2 < aLen) {
-      sum2 = a.slice(cut1, cut2).reduce(arrSum)
-      if (sum2 !== subsetSum) {
-        cut2 += 1
-        continue
+    while (sum1 === subsetSum && cut2 < aLen) {
+      sum2 += a[cut2 - 1]
+
+      if (sum2 === subsetSum &&
+        a.slice(cut2, aLen).reduce(arrSum) === subsetSum) {
+        numSets += 1
       }
-
-      sum3 = a.slice(cut2, aLen).reduce(arrSum)
-      if (sum1 === sum2 && sum2 === sum3) numSets += 1
       cut2 += 1
     }
     cut1 += 1
+    sum2 = 0
   }
 
   return numSets
