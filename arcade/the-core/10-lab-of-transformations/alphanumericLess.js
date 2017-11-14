@@ -4,62 +4,74 @@ function alphanumericLess (s1, s2) {
   const tokenRe = /[a-z]|[0-9]+/g
   const t1 = s1.match(tokenRe)
   const t2 = s2.match(tokenRe)
-  let tokenLeadingZeros
-  let t2TokenLeadingZeros
-  let t1HasMoreLeadingZeros
+  let isTie = true
+  let tiebreaker
+
+  if (s1 === s2) return false
 
   const isSortedThroughA = t1.every((token, i) => {
-    if (i > t2.length - 1) return true
+    if (i > t2.length - 1) {
+      isTie = false
+      return true
+    }
 
     // If a letter is compared with another letter, the usual order applies.
-    if (isNaN(Number(token)) && isNaN(Number(t2[i]))) return token <= t2[i]
+    if (isNaN(Number(token)) && isNaN(Number(t2[i]))) {
+      isTie = token === t2[i]
+      return token <= t2[i]
+    }
 
     // A number is always less than a letter.
-    if (!isNaN(Number(token)) && isNaN(Number(t2[i]))) return true
+    if (!isNaN(Number(token)) && isNaN(Number(t2[i]))) {
+      isTie = false
+      return true
+    }
     if (isNaN(Number(token)) && !isNaN(Number(t2[i]))) return false
 
     // When two numbers are compared, their values are compared. Leading zeros, if any, are ignored.
     if (!isNaN(Number(token)) && !isNaN(Number(t2[i]))) {
-      // Check leading zero stuff
-      if (Number(token) === Number(t2[i]) && token !== t2[i]) {
-        tokenLeadingZeros = (token.match(/^0+/g) || [])[0].length
-        t2TokenLeadingZeros = (t2[i].match(/^0+/g) || [])[0].length
-        t1HasMoreLeadingZeros = tokenLeadingZeros > t2TokenLeadingZeros
+      // return Number(token) <= Number(t2[i])
+      isTie = Number(token) === Number(t2[i])
+      let sT1 = String(token)
+      let sT2 = String(t2[i])
+
+      // Account for leading zeros, set tiebreaker, then remove the zeros
+      if ((sT1[0] === '0' || sT2[0] === '0') && !tiebreaker) {
+        // The string whose ith token has more leading zeros is considered less.
+        const t1zeros = (sT1.match(/^[0]+/g) || [''])[0]
+        const t2zeros = (sT2.match(/^[0]+/g) || [''])[0]
+
+        tiebreaker = (t1zeros.length > t2zeros.length) ? 't1' : 't2'
+
+        sT1 = sT1.replace(/^[0]+/g, '')
+        sT2 = sT2.replace(/^[0]+/g, '')
       }
-      return Number(token) <= Number(t2[i])
+
+      if (sT1.length < sT2.length) {
+        isTie = false
+        return true
+      }
+
+      // Loop over each char and compare them. If t2 is > t1, return false
+      for (let j = 0; j < sT1.length; j += 1) {
+        if (Number(sT1[j]) > Number(sT2[j])) return false
+      }
+
+      return true
     }
 
     // Default return
     return false
   })
 
-  if (!isSortedThroughA) return false
-  if (t2.length !== t1.length) return (t2.length > t1.length)
+  if (isTie && tiebreaker === 't2' && t2.length <= t1.length) return false
 
-  /**
-   * If the two strings s1 and s2 appear to be equal, consider the smallest index i such that
-   * tokens(s1)[i] and tokens(s2)[i] differ only by the number of leading zeros. If no
-   * such i exists, the strings are indeed equal. Otherwise, the string whose ith token
-   * has more leading zeros is considered less.
-   */
-  if (tokenLeadingZeros && !t1HasMoreLeadingZeros) return false
-  // for (let i = 0; i < t1.length; i += 1) {
-  //   if ((t1[i][0] === '0' || t2[i][0] === '0') && Number(t1[i]) === Number(t2[i])) {
-  //     console.log('t1[i]', t1[i], 't2[i]', t2[i])
-
-  //     // return 'a has more zeros'
-  //     for (let j = 0; j < t1[i].length; j += 1) {
-  //       if (t1[i] === '0' && t2[i] !== '0') return true
-  //     }
-  //     return false
-  //   }
-  // }
-
-  return true
+  return isSortedThroughA
 }
 
 const test = (s1, s2, x) => assert.equal(alphanumericLess(s1, s2), x)
 
+test('a', 'a', false)
 test('a', 'b', true)
 test('b', 'a', false)
 test('z', '0', false)
@@ -78,5 +90,20 @@ test('zza1233', 'zza1234', true)
 test('zzz1', 'zzz1', false)
 test('00', 'a2', true)
 test('000000', 'a2', true)
+
+/**
+  "a" < "a1" < "ab"
+  "ab42" < "ab000144" < "ab00144" < "ab144" < "ab000144x"
+  "x11y012" < "x011y13"
+ */
+test('a', 'a1', true)
+test('a1', 'ab', true)
+
+test('ab42', 'ab000144', true)
+test('ab000144', 'ab00144', true)
+test('ab00144', 'ab144', true)
+test('ab144', 'ab000144x', true)
+
+test('x11y012', 'x011y13', true)
 
 console.log('All tests passed.')
