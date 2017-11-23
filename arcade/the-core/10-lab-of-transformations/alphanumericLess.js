@@ -10,7 +10,7 @@ function alphanumericLess (s1, s2) {
 
   if (s1 === s2) return false
 
-  const isSortedThroughA = t1.every((token, i) => {
+  const isSorted = t1.every((token, i) => {
     if (i > t2.length - 1) {
       isTie = false
       return true
@@ -31,7 +31,6 @@ function alphanumericLess (s1, s2) {
 
     // When two numbers are compared, their values are compared. Leading zeros, if any, are ignored.
     if (!isNaN(Number(token)) && !isNaN(Number(t2[i]))) {
-      // return Number(token) <= Number(t2[i])
       isTie = Number(token) === Number(t2[i])
       let sT1 = String(token)
       let sT2 = String(t2[i])
@@ -42,7 +41,7 @@ function alphanumericLess (s1, s2) {
         const t1zeros = (sT1.match(leadingZeroRe) || [''])[0]
         const t2zeros = (sT2.match(leadingZeroRe) || [''])[0]
 
-        tiebreaker = (t1zeros.length > t2zeros.length) ? 't1' : 't2'
+        if (t1zeros.length !== t2zeros.length) tiebreaker = (t1zeros.length > t2zeros.length) ? 't1' : 't2'
       }
 
       sT1 = sT1.replace(leadingZeroRe, '')
@@ -58,7 +57,7 @@ function alphanumericLess (s1, s2) {
         return false
       }
 
-      // Loop over each char and compare them. If t2 is > t1, return false
+      // Loop over each char and compare them
       for (let j = 0; j < sT1.length; j += 1) {
         if (Number(sT1[j]) > Number(sT2[j])) return false
         if (Number(sT1[j]) < Number(sT2[j])) {
@@ -76,7 +75,7 @@ function alphanumericLess (s1, s2) {
 
   if (isTie && tiebreaker === 't2' && t2.length <= t1.length) return false
 
-  return isSortedThroughA
+  return isSorted
 }
 
 const test = (s1, s2, x) => assert.equal(alphanumericLess(s1, s2), x)
@@ -106,6 +105,10 @@ test('19', '20', true)
 test('119', '20', false)
 test('0000000000000019', '20', true)
 test('19', '00020', true)
+test('Map', 'Rap', true)
+test('ab02', 'ab2', true)
+test('1ab02', '1ab2', true)
+test('0ab02', '0ab2', true)
 
 /**
   "a" < "a1" < "ab"
