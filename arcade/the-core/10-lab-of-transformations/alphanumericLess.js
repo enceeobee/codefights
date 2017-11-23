@@ -2,6 +2,7 @@ const assert = require('assert')
 
 function alphanumericLess (s1, s2) {
   const tokenRe = /[a-z]|[0-9]+/g
+  const leadingZeroRe = /^[0]+/g
   const t1 = s1.match(tokenRe)
   const t2 = s2.match(tokenRe)
   let isTie = true
@@ -38,23 +39,32 @@ function alphanumericLess (s1, s2) {
       // Account for leading zeros, set tiebreaker, then remove the zeros
       if ((sT1[0] === '0' || sT2[0] === '0') && !tiebreaker) {
         // The string whose ith token has more leading zeros is considered less.
-        const t1zeros = (sT1.match(/^[0]+/g) || [''])[0]
-        const t2zeros = (sT2.match(/^[0]+/g) || [''])[0]
+        const t1zeros = (sT1.match(leadingZeroRe) || [''])[0]
+        const t2zeros = (sT2.match(leadingZeroRe) || [''])[0]
 
         tiebreaker = (t1zeros.length > t2zeros.length) ? 't1' : 't2'
-
-        sT1 = sT1.replace(/^[0]+/g, '')
-        sT2 = sT2.replace(/^[0]+/g, '')
       }
 
+      sT1 = sT1.replace(leadingZeroRe, '')
+      sT2 = sT2.replace(leadingZeroRe, '')
+
+      // Different magnitude nums
       if (sT1.length < sT2.length) {
         isTie = false
         return true
+      }
+      if (sT1.length > sT2.length) {
+        isTie = false
+        return false
       }
 
       // Loop over each char and compare them. If t2 is > t1, return false
       for (let j = 0; j < sT1.length; j += 1) {
         if (Number(sT1[j]) > Number(sT2[j])) return false
+        if (Number(sT1[j]) < Number(sT2[j])) {
+          isTie = false
+          return true
+        }
       }
 
       return true
@@ -90,6 +100,12 @@ test('zza1233', 'zza1234', true)
 test('zzz1', 'zzz1', false)
 test('00', 'a2', true)
 test('000000', 'a2', true)
+test('1000000000000000000000000000000000000000000000000000000001', '1000000000000000000000000000000000000000000000000000000000', false)
+test('1000000000000000000000000000000000000000000000000000000001', '1000000000000000000000000000000000000000000000000000000002', true)
+test('19', '20', true)
+test('119', '20', false)
+test('0000000000000019', '20', true)
+test('19', '00020', true)
 
 /**
   "a" < "a1" < "ab"
