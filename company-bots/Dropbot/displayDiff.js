@@ -7,6 +7,10 @@ function displayDiff (oldVersion, newVersion) {
   let i = 0
   let newI = 0
 
+  const oldTokens = {
+    // oldVersionIndex = oldToken
+  }
+
   // let hasCompleteGroup = false
 
   /* for (let i = 0; i < oldVersion.length; i++) {
@@ -47,13 +51,12 @@ function displayDiff (oldVersion, newVersion) {
       newI++
     } else {
       oldToken = ''
-      newToken = ''
+      // newToken = ''
 
-      /**
-       old: 'aab',
-       new: 'ab',
-       x: 'a(a)b'
-       */
+      //  old: 'aab',
+      //  new: 'ab',
+      //  x: 'a(a)b'
+
       // Something is different...
       // Check for next diff in old
       // TODO - I wonder if we need to start looking at the next char; i.e. j = i + 1. Maybe not, I dunno
@@ -65,32 +68,37 @@ function displayDiff (oldVersion, newVersion) {
         }
       }
       // Check for next diff in new
-      for (let j = newI; j < newVersion.length; j++) {
-        if (newVersion[j] !== oldVersion[i]) {
-          newToken += newVersion[j]
-        } else {
-          break
-        }
-      }
+      // for (let j = newI; j < newVersion.length; j++) {
+      //   if (newVersion[j] !== oldVersion[i]) {
+      //     newToken += newVersion[j]
+      //   } else {
+      //     break
+      //   }
+      // }
 
       console.log('oldtoken', oldToken, 'newtoken', newToken)
+      oldTokens[i] = oldToken
+      i += oldToken.length - 1
 
-      if (oldToken.length < newToken.length) {
-        result += `(${oldToken})`
-        i += oldToken.length - 1
-      } else if (oldToken.length > newToken.length) {
-        result += `[${newToken}]`
-        newI += newToken.length
-        i--
-      } else {
-        result += `(${oldToken})[${newToken}]`
-      }
+
+      // if (oldToken.length < newToken.length) {
+      //   result += `(${oldToken})`
+      //   i += oldToken.length - 1
+      // } else if (oldToken.length > newToken.length) {
+      //   result += `[${newToken}]`
+      //   newI += newToken.length
+      //   i--
+      // } else {
+      //   result += `(${oldToken})[${newToken}]`
+      // }
     }
   }
 
   // TODO - Account for leftovers
-  if (i <= oldVersion.length - 1 && result[result.length - 1] !== ')') result += `(${oldVersion.slice(i)})`
-  if (newI <= newVersion.length - 1 && result[result.length - 1] !== ']') result += `[${newVersion.slice(newI)}]`
+  // if (i <= oldVersion.length - 1 && result[result.length - 1] !== ')') result += `(${oldVersion.slice(i)})`
+  // if (newI <= newVersion.length - 1 && result[result.length - 1] !== ']') result += `[${newVersion.slice(newI)}]`
+
+  console.log('oldTokens', oldTokens)
 
   return result
 }
@@ -105,6 +113,11 @@ const tests = [
     old: 'a',
     new: 'b',
     x: '(a)[b]'
+  },
+  {
+    old: '111a222',
+    new: '111bb222',
+    x: '111(a)[bb]222'
   },
   {
     old: 'a',
