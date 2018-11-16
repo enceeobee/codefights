@@ -1,0 +1,19 @@
+{
+  "name": "codefights",
+  "version": "1.0.0",
+  "description": "My JS codefights solutions",
+  "main": "index.js",
+  "repository": "git@github.com:ncob/codefights.git",
+  "author": "Nate Bisbee",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "lint": "standard",
+    "lint-fix": "standard --fix",
+    "watch": "nodemon"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.6",
+    "standard": "^12.0.1"
+  }
+}
