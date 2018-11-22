@@ -9,7 +9,7 @@ function constructSquare (s) {
       }, [])
       .map(key => String(value).match(new RegExp(key, 'g')).length)
       .sort((a, b) => a - b)
-    )
+  )
   const checkDoesMatch = (sMap, nMap) => sMap.length === nMap.length && sMap.every((val, i) => val === nMap[i])
   const sMap = makeMap(s)
 
@@ -28,7 +28,7 @@ function constructSquare (s) {
   return highSquare || -1
 }
 
-const test = (s, expected) => assert.equal(constructSquare(s), expected)
+const test = (s, expected) => assert.strictEqual(constructSquare(s), expected)
 
 test('ab', 81)
 test('zzz', -1)

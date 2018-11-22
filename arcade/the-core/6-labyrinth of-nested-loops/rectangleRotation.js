@@ -1,11 +1,10 @@
-const assert = require('assert');
+const assert = require('assert')
 
-function rectangleRotation(a, b) {
+function rectangleRotation (a, b) {
   // a=6, b=4
   // 5*3 + 4*2
   // return ((a-1) * (b - 1)) + ((a - 2) * (b - 2));
-  return ((a-1) * (b - 1)) + ((a - 2) * (b - 2));
-
+  return ((a - 1) * (b - 1)) + ((a - 2) * (b - 2))
 
   // If a is even, there are a-1 points at the origin.
   // If a is odd, there are a-2 points
@@ -32,33 +31,33 @@ function rectangleRotation(a, b) {
   // console.log('newCoords', newCoords);
 }
 
-let a;
-let b;
-let expected;
-let actual;
+let a
+let b
+let expected
+let actual
 
-a = 6;
-b = 4;
-expected = 23;
-actual = rectangleRotation(a, b);
-assert.equal(actual, expected);
+a = 6
+b = 4
+expected = 23
+actual = rectangleRotation(a, b)
+assert.strictEqual(actual, expected)
 
-a = 30;
-b = 2;
-expected = 65;
-actual = rectangleRotation(a, b);
-assert.equal(actual, expected);
+a = 30
+b = 2
+expected = 65
+actual = rectangleRotation(a, b)
+assert.strictEqual(actual, expected)
 
-a = 8;
-b = 6;
-expected = 49;
-actual = rectangleRotation(a, b);
-assert.equal(actual, expected);
+a = 8
+b = 6
+expected = 49
+actual = rectangleRotation(a, b)
+assert.strictEqual(actual, expected)
 
-a = 16;
-b = 20;
-expected = 333;
-actual = rectangleRotation(a, b);
-assert.equal(actual, expected);
+a = 16
+b = 20
+expected = 333
+actual = rectangleRotation(a, b)
+assert.strictEqual(actual, expected)
 
-console.log('All tests passed.');
+console.log('All tests passed.')

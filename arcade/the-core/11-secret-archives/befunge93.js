@@ -204,163 +204,157 @@ function befunge93 (program) {
 }
 
 // Mini unit tests for each instruction
-function unitTest () {
-  let state = { direction: '' }
-  let expected
+// function unitTest () {
+//   let state = { direction: '' }
+//   let expected
 
-  // direction instructions:
-  assert.deepStrictEqual(reducer(state, '>'), { direction: 'r' })
-  assert.deepStrictEqual(reducer(state, 'v'), { direction: 'd' })
-  assert.deepStrictEqual(reducer(state, '<'), { direction: 'l' })
-  assert.deepStrictEqual(reducer(state, '^'), { direction: 'u' })
+//   // direction instructions:
+//   assert.deepStrictEqual(reducer(state, '>'), { direction: 'r' })
+//   assert.deepStrictEqual(reducer(state, 'v'), { direction: 'd' })
+//   assert.deepStrictEqual(reducer(state, '<'), { direction: 'l' })
+//   assert.deepStrictEqual(reducer(state, '^'), { direction: 'u' })
 
-  // conditional instructions
-  let stack = new Stack()
-  stack.push(0)
-  state = { stack, direction: '' }
-  assert.deepStrictEqual(reducer(state, '_'), { stack, direction: 'r' })
+//   // conditional instructions
+//   let stack = new Stack()
+//   stack.push(0)
+//   state = { stack, direction: '' }
+//   assert.deepStrictEqual(reducer(state, '_'), { stack, direction: 'r' })
 
-  stack = new Stack()
-  stack.push(60)
-  state = { stack, direction: '' }
-  assert.deepStrictEqual(reducer(state, '_'), { stack, direction: 'l' })
+//   stack = new Stack()
+//   stack.push(60)
+//   state = { stack, direction: '' }
+//   assert.deepStrictEqual(reducer(state, '_'), { stack, direction: 'l' })
 
-  stack = new Stack()
-  stack.push(0)
-  state = { stack, direction: '' }
-  assert.deepStrictEqual(reducer(state, '|'), { stack, direction: 'd' })
+//   stack = new Stack()
+//   stack.push(0)
+//   state = { stack, direction: '' }
+//   assert.deepStrictEqual(reducer(state, '|'), { stack, direction: 'd' })
 
-  stack = new Stack()
-  stack.push(60)
-  state = { stack, direction: '' }
-  assert.deepStrictEqual(reducer(state, '|'), { stack, direction: 'u' })
+//   stack = new Stack()
+//   stack.push(60)
+//   state = { stack, direction: '' }
+//   assert.deepStrictEqual(reducer(state, '|'), { stack, direction: 'u' })
 
-  // math operators
-  // case '+'
-  stack = new Stack()
-  stack.push(60)
-  stack.push(90)
-  state = { stack }
-  expected = new Stack()
-  expected.push(150)
-  assert.deepStrictEqual(reducer(state, '+'), { stack: expected })
+//   // math operators
+//   // case '+'
+//   stack = new Stack()
+//   stack.push(60)
+//   stack.push(90)
+//   state = { stack }
+//   expected = new Stack()
+//   expected.push(150)
+//   assert.deepStrictEqual(reducer(state, '+'), { stack: expected })
 
-  stack = new Stack()
-  stack.push(90)
-  stack.push(60)
-  state = { stack }
-  expected = new Stack()
-  expected.push(30)
-  assert.deepStrictEqual(reducer(state, '-'), { stack: expected })
+//   stack = new Stack()
+//   stack.push(90)
+//   stack.push(60)
+//   state = { stack }
+//   expected = new Stack()
+//   expected.push(30)
+//   assert.deepStrictEqual(reducer(state, '-'), { stack: expected })
 
-  stack = new Stack()
-  stack.push(90)
-  stack.push(60)
-  state = { stack }
-  expected = new Stack()
-  expected.push(5400)
-  assert.deepStrictEqual(reducer(state, '*'), { stack: expected })
+//   stack = new Stack()
+//   stack.push(90)
+//   stack.push(60)
+//   state = { stack }
+//   expected = new Stack()
+//   expected.push(5400)
+//   assert.deepStrictEqual(reducer(state, '*'), { stack: expected })
 
-  stack = new Stack()
-  stack.push(120)
-  stack.push(60)
-  state = { stack }
-  expected = new Stack()
-  expected.push(2)
-  assert.deepStrictEqual(reducer(state, '/'), { stack: expected })
+//   stack = new Stack()
+//   stack.push(120)
+//   stack.push(60)
+//   state = { stack }
+//   expected = new Stack()
+//   expected.push(2)
+//   assert.deepStrictEqual(reducer(state, '/'), { stack: expected })
 
-  stack = new Stack()
-  stack.push(19)
-  stack.push(4)
-  state = { stack }
-  expected = new Stack()
-  expected.push(3)
-  assert.deepStrictEqual(reducer(state, '%'), { stack: expected })
+//   stack = new Stack()
+//   stack.push(19)
+//   stack.push(4)
+//   state = { stack }
+//   expected = new Stack()
+//   expected.push(3)
+//   assert.deepStrictEqual(reducer(state, '%'), { stack: expected })
 
-  // Logical
-  stack = new Stack()
-  stack.push(0)
-  state = { stack }
-  expected = new Stack()
-  expected.push(1)
-  assert.deepStrictEqual(reducer(state, '!'), { stack: expected })
+//   // Logical
+//   stack = new Stack()
+//   stack.push(0)
+//   state = { stack }
+//   expected = new Stack()
+//   expected.push(1)
+//   assert.deepStrictEqual(reducer(state, '!'), { stack: expected })
 
-  stack = new Stack()
-  stack.push(110)
-  state = { stack }
-  expected = new Stack()
-  expected.push(0)
-  assert.deepStrictEqual(reducer(state, '!'), { stack: expected })
+//   stack = new Stack()
+//   stack.push(110)
+//   state = { stack }
+//   expected = new Stack()
+//   expected.push(0)
+//   assert.deepStrictEqual(reducer(state, '!'), { stack: expected })
 
-  stack = new Stack()
-  stack.push(50)
-  stack.push(0)
-  state = { stack }
-  expected = new Stack()
-  expected.push(1)
-  assert.deepStrictEqual(reducer(state, '`'), { stack: expected })
+//   stack = new Stack()
+//   stack.push(50)
+//   stack.push(0)
+//   state = { stack }
+//   expected = new Stack()
+//   expected.push(1)
+//   assert.deepStrictEqual(reducer(state, '`'), { stack: expected })
 
-  stack = new Stack()
-  stack.push(50)
-  stack.push(70)
-  state = { stack }
-  expected = new Stack()
-  expected.push(0)
-  assert.deepStrictEqual(reducer(state, '`'), { stack: expected })
+//   stack = new Stack()
+//   stack.push(50)
+//   stack.push(70)
+//   state = { stack }
+//   expected = new Stack()
+//   expected.push(0)
+//   assert.deepStrictEqual(reducer(state, '`'), { stack: expected })
 
-  // Stack
-  stack = new Stack()
-  stack.push(70)
-  state = { stack }
-  expected = new Stack()
-  expected.push(70)
-  expected.push(70)
-  assert.deepStrictEqual(reducer(state, ':'), { stack: expected })
+//   // Stack
+//   stack = new Stack()
+//   stack.push(70)
+//   state = { stack }
+//   expected = new Stack()
+//   expected.push(70)
+//   expected.push(70)
+//   assert.deepStrictEqual(reducer(state, ':'), { stack: expected })
 
-  stack = new Stack()
-  stack.push(70)
-  stack.push(20)
-  state = { stack }
-  expected = new Stack()
-  expected.push(20)
-  expected.push(70)
-  assert.deepStrictEqual(reducer(state, '\\'), { stack: expected })
+//   stack = new Stack()
+//   stack.push(70)
+//   stack.push(20)
+//   state = { stack }
+//   expected = new Stack()
+//   expected.push(20)
+//   expected.push(70)
+//   assert.deepStrictEqual(reducer(state, '\\'), { stack: expected })
 
-  stack = new Stack()
-  stack.push(70)
-  stack.push(20)
-  state = { stack }
-  expected = new Stack()
-  expected.push(70)
-  assert.deepStrictEqual(reducer(state, '$'), { stack: expected })
+//   stack = new Stack()
+//   stack.push(70)
+//   stack.push(20)
+//   state = { stack }
+//   expected = new Stack()
+//   expected.push(70)
+//   assert.deepStrictEqual(reducer(state, '$'), { stack: expected })
 
-  // Output
-  stack = new Stack()
-  stack.push('70')
-  state = { output: '', stack }
-  assert.deepStrictEqual(reducer(state, '.'), { stack, output: '70 ' })
+//   // Output
+//   stack = new Stack()
+//   stack.push('70')
+//   state = { output: '', stack }
+//   assert.deepStrictEqual(reducer(state, '.'), { stack, output: '70 ' })
 
-  stack = new Stack()
-  stack.push(97)
-  state = { output: '', stack }
-  assert.deepStrictEqual(reducer(state, ','), { stack, output: 'a' })
+//   stack = new Stack()
+//   stack.push(97)
+//   state = { output: '', stack }
+//   assert.deepStrictEqual(reducer(state, ','), { stack, output: 'a' })
 
-  state = { stack: new Stack() }
-  expected = new Stack()
-  expected.push(7)
-  assert.deepStrictEqual(reducer(state, '7'), { stack: expected })
+//   state = { stack: new Stack() }
+//   expected = new Stack()
+//   expected.push(7)
+//   assert.deepStrictEqual(reducer(state, '7'), { stack: expected })
 
-  state = { inStringMode: false }
-  assert.deepStrictEqual(reducer(state, '"'), { inStringMode: true })
-  state = { inStringMode: true }
-  assert.deepStrictEqual(reducer(state, '"'), { inStringMode: false })
-
-  // TODO - do we need this at all?
-  // case ' ': {
-  //   //  (whitespace character): empty instruction; does nothing
-  //   break
-  // }
-}
+//   state = { inStringMode: false }
+//   assert.deepStrictEqual(reducer(state, '"'), { inStringMode: true })
+//   state = { inStringMode: true }
+//   assert.deepStrictEqual(reducer(state, '"'), { inStringMode: false })
+// }
 
 // unitTest()
 

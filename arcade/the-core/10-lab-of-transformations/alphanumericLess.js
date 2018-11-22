@@ -52,7 +52,7 @@ function alphanumericLess (s1, s2) {
   return false
 }
 
-const test = (s1, s2, x) => assert.equal(alphanumericLess(s1, s2), x)
+const test = (s1, s2, x) => assert.strictEqual(alphanumericLess(s1, s2), x)
 
 test('a', 'a', false)
 test('a', 'b', true)

@@ -16,7 +16,7 @@ function goodSet (someSet) {
 }
 
 function test (someSet, expected) {
-  assert.equal(goodSet(someSet), expected)
+  assert.strictEqual(goodSet(someSet), expected)
 }
 
 test([1, 2, 3], false)

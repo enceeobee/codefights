@@ -50,7 +50,7 @@ function createAnagram (s, t) {
   return turns
 }
 
-const test = (s, t, ex) => assert.equal(createAnagram(s, t), ex)
+const test = (s, t, ex) => assert.strictEqual(createAnagram(s, t), ex)
 
 test('AABAA', 'BBAAA', 1)
 test('BBAAA', 'AABAA', 1)

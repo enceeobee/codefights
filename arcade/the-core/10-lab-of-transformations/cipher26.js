@@ -31,7 +31,7 @@ function cipher26 (message) {
     }, '')
 }
 
-const test = (m, x) => assert.equal(cipher26(m), x)
+const test = (m, x) => assert.strictEqual(cipher26(m), x)
 
 test('taiaiaertkixquxjnfxxdh', 'thisisencryptedmessage')
 test('ibttlprimfymqlpgeftwu', 'itsasecrettoeverybody')

@@ -9,7 +9,7 @@ function higherVersion (ver1, ver2) {
   }
   return false
 }
-const test = (v1, v2, x) => assert.equal(higherVersion(v1, v2), x)
+const test = (v1, v2, x) => assert.strictEqual(higherVersion(v1, v2), x)
 
 test('1.2.2', '2.2.0', false)
 test('1.2.2', '1.22.0', false)

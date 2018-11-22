@@ -134,8 +134,8 @@ let testExpected
 // 1.
 
 testBoard = [['R', 'L', 'D'],
-             ['U', 'O', 'E'],
-             ['C', 'S', 'O']]
+  ['U', 'O', 'E'],
+  ['C', 'S', 'O']]
 testWords = ['CODE',
   'SOLO',
   'RULES',
@@ -144,13 +144,13 @@ testActual = wordBoggle(testBoard, testWords)
 testExpected = ['CODE',
   'RULES']
 
-assert.deepEqual(testActual, testExpected)
+assert.strictDeepEqual(testActual, testExpected)
 
 // 2.
 
 testBoard = [['A', 'X', 'V', 'W'],
-             ['A', 'L', 'T', 'I'],
-             ['T', 'T', 'J', 'R']]
+  ['A', 'L', 'T', 'I'],
+  ['T', 'T', 'J', 'R']]
 testWords = ['AXOLOTL',
   'TAXA',
   'ABA',
@@ -167,54 +167,54 @@ testExpected = ['AXAL',
   'TAXA',
   'VITTA']
 testActual = wordBoggle(testBoard, testWords)
-assert.deepEqual(testActual, testExpected)
+assert.strictDeepEqual(testActual, testExpected)
 
 // 3.
 
 // Has to be something with dupes, right?
 testBoard = [['A', 'B'],
-             ['A', 'B']]
+  ['A', 'B']]
 testWords = ['AB', 'ABBA', 'ABAB']
 testExpected = ['AB', 'ABAB', 'ABBA']
 testActual = wordBoggle(testBoard, testWords)
-assert.deepEqual(testActual, testExpected)
+assert.strictDeepEqual(testActual, testExpected)
 
 // 4.
 
 testBoard = [['A', 'B', 'C'],
-             ['A', 'B', 'C']]
+  ['A', 'B', 'C']]
 testWords = ['AB', 'ABBA', 'ABAB', 'ABCA', 'AABBCC', 'AABBCCC', 'XXX', 'AAA', 'ABCABC', 'ABCCB']
 testExpected = ['AABBCC', 'AB', 'ABAB', 'ABBA', 'ABCCB']
 testActual = wordBoggle(testBoard, testWords)
-assert.deepEqual(testActual, testExpected)
+assert.strictDeepEqual(testActual, testExpected)
 
 // 5.
 
 testBoard = [['A', 'B', 'C', 'D'],
-             ['A', 'B', 'C', 'D'],
-             ['A', 'B', 'C', 'D']]
+  ['A', 'B', 'C', 'D'],
+  ['A', 'B', 'C', 'D']]
 testWords = ['B', 'B', 'BCBCBC', 'BAC']
 testExpected = ['B', 'BCBCBC']
 testActual = wordBoggle(testBoard, testWords)
-assert.deepEqual(testActual, testExpected)
+assert.strictDeepEqual(testActual, testExpected)
 
 // 6.
 
 testBoard = [['A', 'B', 'C'],
-             ['A', 'B', 'C']]
+  ['A', 'B', 'C']]
 testWords = ['AB', 'ABBA', 'ABAB', 'ABCA', 'AABBCC', 'AABBCCC', 'XXX', 'AAA', 'ABCABC', 'ABCCB', 'AB', 'ABBA', 'ABAB', 'ABCA', 'AABBCC', 'AABBCCC', 'XXX', 'AAA', 'ABCABC', 'ABCCB', 'AB', 'ABBA', 'ABAB', 'ABCA', 'AABBCC', 'AABBCCC', 'XXX', 'AAA', 'ABCABC', 'ABCCB', 'AB', 'ABBA', 'ABAB', 'ABCA', 'AABBCC', 'AABBCCC', 'XXX', 'AAA', 'ABCABC', 'ABCCB', 'AB', 'ABBA', 'ABAB', 'ABCA', 'AABBCC', 'AABBCCC', 'XXX', 'AAA', 'ABCABC', 'ABCCB', 'AB', 'ABBA', 'ABAB', 'ABCA', 'AABBCC', 'AABBCCC', 'XXX', 'AAA', 'ABCABC', 'ABCCB', 'AB', 'ABBA', 'ABAB', 'ABCA', 'AABBCC', 'AABBCCC', 'XXX', 'AAA', 'ABCABC', 'ABCCB', 'AB', 'ABBA', 'ABAB', 'ABCA', 'AABBCC', 'AABBCCC', 'XXX', 'AAA', 'ABCABC', 'ABCCB', 'AB', 'ABBA', 'ABAB', 'ABCA', 'AABBCC', 'AABBCCC', 'XXX', 'AAA', 'ABCABC', 'ABCCB', 'AB', 'ABBA', 'ABAB', 'ABCA', 'AABBCC', 'AABBCCC', 'XXX', 'AAA', 'ABCABC', 'ABCCB', 'AB', 'ABBA', 'ABAB', 'ABCA', 'AABBCC', 'AABBCCC', 'XXX', 'AAA', 'ABCABC', 'ABCCB', 'AB', 'ABBA', 'ABAB', 'ABCA', 'AABBCC', 'AABBCCC', 'XXX', 'AAA', 'ABCABC', 'ABCCB', 'AB', 'ABBA', 'ABAB', 'ABCA', 'AABBCC', 'AABBCCC', 'XXX', 'AAA', 'ABCABC', 'ABCCB', 'AB', 'ABBA', 'ABAB', 'ABCA', 'AABBCC', 'AABBCCC', 'XXX', 'AAA', 'ABCABC', 'ABCCB', 'AB', 'ABBA', 'ABAB', 'ABCA', 'AABBCC', 'AABBCCC', 'XXX', 'AAA', 'ABCABC', 'ABCCB', 'AB', 'ABBA', 'ABAB', 'ABCA', 'AABBCC', 'AABBCCC', 'XXX', 'AAA', 'ABCABC', 'ABCCB']
 testExpected = ['AABBCC', 'AB', 'ABAB', 'ABBA', 'ABCCB']
 testActual = wordBoggle(testBoard, testWords)
-assert.deepEqual(testActual, testExpected)
+assert.strictDeepEqual(testActual, testExpected)
 
 // 7.
 testBoard = [['A', 'B', 'C', 'D'],
-             ['E', 'F', 'G', 'H'],
-             ['I', 'J', 'K', 'L']]
+  ['E', 'F', 'G', 'H'],
+  ['I', 'J', 'K', 'L']]
 testWords = ['B', 'B', 'BCBCBC', 'BAC', 'DCBA', 'DHL', 'CDHLK', 'CDHLKL']
 testExpected = ['B', 'CDHLK', 'DCBA', 'DHL']
 testActual = wordBoggle(testBoard, testWords)
-assert.deepEqual(testActual, testExpected)
+assert.strictDeepEqual(testActual, testExpected)
 
 // 8.
 
@@ -222,30 +222,30 @@ testBoard = []
 testWords = ['JGADJDALD']
 testExpected = []
 testActual = wordBoggle(testBoard, testWords)
-assert.deepEqual(testActual, testExpected)
+assert.strictDeepEqual(testActual, testExpected)
 
 // 9. - Ok, it's not performance-related
 
 testBoard = [['A', 'B', 'C', 'D'],
-             ['H', 'G', 'F', 'E'],
-             ['I', 'J', 'K', 'L'],
-             ['P', 'O', 'N', 'M']]
+  ['H', 'G', 'F', 'E'],
+  ['I', 'J', 'K', 'L'],
+  ['P', 'O', 'N', 'M']]
 testWords = ['ABCDEFGHIJKLMNOP', 'AGC', 'DA', 'DL', 'DF', 'DM', 'AHI']
 for (let i = 0; i < 150; i++) testWords.push('ABCDEFGHIJKLMNOP')
 console.log('testWords', testWords.length)
 testExpected = ['ABCDEFGHIJKLMNOP', 'AGC', 'AHI', 'DF']
 testActual = wordBoggle(testBoard, testWords)
-assert.deepEqual(testActual, testExpected)
+assert.strictDeepEqual(testActual, testExpected)
 
 // 10.
 
 testBoard = [['A', 'A', 'A', 'A'],
-             ['A', 'A', 'A', 'A'],
-             ['A', 'A', 'A', 'A']]
+  ['A', 'A', 'A', 'A'],
+  ['A', 'A', 'A', 'A']]
 testWords = ['A', 'AAAAAAAAAAAA', 'AAAAAAAAAAAAAAA']
 testExpected = ['A', 'AAAAAAAAAAAA']
 testActual = wordBoggle(testBoard, testWords)
-assert.deepEqual(testActual, testExpected)
+assert.strictDeepEqual(testActual, testExpected)
 
 // 11. Definitely not perf related - Oh shit, this breaks it.
 
@@ -257,28 +257,28 @@ assert.deepEqual(testActual, testExpected)
 // for (let i = 0; i < 150; i++) testWords.push('A'.repeat(16))
 // testExpected = ['A', 'AAAAAAAAAAAA', 'AAAAAAAAAAAAAAA', 'A'.repeat(16)]
 // testActual = wordBoggle(testBoard, testWords)
-// assert.deepEqual(testActual, testExpected)
+// assert.strictDeepEqual(testActual, testExpected)
 
 // 12. Words with double letters, where >1 ways to solve it
 
 testBoard = [['B', 'O'],
-             ['O', 'G'],
-             ['L', 'E']]
+  ['O', 'G'],
+  ['L', 'E']]
 testWords = ['BOOGLE', 'BOGE', 'BOLE', 'BOO'] // IT DIDN'T FIND BOLE
 testExpected = ['BOGE', 'BOLE', 'BOO', 'BOOGLE']
 testActual = wordBoggle(testBoard, testWords)
-assert.deepEqual(testActual, testExpected)
+assert.strictDeepEqual(testActual, testExpected)
 
 // 13.
 
 testBoard = [['B', 'O', 'O'],
-             ['O', 'O', 'O'],
-             ['O', 'G', 'O'],
-             ['L', 'O', 'O']]
+  ['O', 'O', 'O'],
+  ['O', 'G', 'O'],
+  ['L', 'O', 'O']]
 testWords = ['BOOGOO', 'BOOL']
 testExpected = ['BOOGOO', 'BOOL']
 testActual = wordBoggle(testBoard, testWords)
-assert.deepEqual(testActual, testExpected)
+assert.strictDeepEqual(testActual, testExpected)
 
 // 14.
 
@@ -286,15 +286,15 @@ testBoard = [['O']]
 testWords = ['O']
 testExpected = ['O']
 testActual = wordBoggle(testBoard, testWords)
-assert.deepEqual(testActual, testExpected)
+assert.strictDeepEqual(testActual, testExpected)
 
 // 15.
 
 testBoard = [['O', 'R', 'E', 'O'],
-             ['O', 'R', 'E', 'O'],
-             ['O', 'R', 'E', 'O'],
-             ['O', 'R', 'E', 'O']]
+  ['O', 'R', 'E', 'O'],
+  ['O', 'R', 'E', 'O'],
+  ['O', 'R', 'E', 'O']]
 testWords = ['O', 'OOOOR', 'OREO', 'OOOOO', 'ROOR']
 testExpected = ['O', 'OOOOR', 'OREO', 'ROOR']
 testActual = wordBoggle(testBoard, testWords)
-assert.deepEqual(testActual, testExpected)
+assert.strictDeepEqual(testActual, testExpected)

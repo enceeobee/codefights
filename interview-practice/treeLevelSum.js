@@ -30,30 +30,30 @@ tree = '(0(5(6()())(14()(9()())))(7(1()())(23()())))'
 k = 2
 expected = 44
 actual = treeLevelSum(tree, k)
-assert.equal(actual, expected)
+assert.strictEqual(actual, expected)
 
 tree = '(3(3()())(1()()))'
 k = 1
 expected = 4
 actual = treeLevelSum(tree, k)
-assert.equal(actual, expected)
+assert.strictEqual(actual, expected)
 
 tree = '(0(5(6()())(4()(9()())))(7(1()())(3()())))'
 k = 2
 expected = 14
 actual = treeLevelSum(tree, k)
-assert.equal(actual, expected)
+assert.strictEqual(actual, expected)
 
 tree = '(3()())'
 k = 0
 expected = 3
 actual = treeLevelSum(tree, k)
-assert.equal(actual, expected)
+assert.strictEqual(actual, expected)
 
 tree = '(0(5()())())'
 k = 1
 expected = 5
 actual = treeLevelSum(tree, k)
-assert.equal(actual, expected)
+assert.strictEqual(actual, expected)
 
 console.log('All tests passed')

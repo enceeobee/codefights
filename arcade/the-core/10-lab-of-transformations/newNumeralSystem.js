@@ -13,7 +13,7 @@ function newNumeralSystem (number) {
   return pairs
 }
 
-const test = (n, x) => assert.deepEqual(newNumeralSystem(n), x)
+const test = (n, x) => assert.strictDeepEqual(newNumeralSystem(n), x)
 
 test('G', ['A + G',
   'B + F',

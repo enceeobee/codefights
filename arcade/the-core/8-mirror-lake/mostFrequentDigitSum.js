@@ -26,7 +26,7 @@ function mostFrequentDigitSum (n) {
   return Math.max(...maxNums)
 }
 
-const test = (n, expected) => assert.equal(mostFrequentDigitSum(n), expected)
+const test = (n, expected) => assert.strictEqual(mostFrequentDigitSum(n), expected)
 
 test(88, 9)
 test(8, 8)

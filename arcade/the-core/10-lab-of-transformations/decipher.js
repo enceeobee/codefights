@@ -14,7 +14,7 @@ function decipher (cipher) {
     }, '')
 }
 
-const test = (c, x) => assert.equal(decipher(c), x)
+const test = (c, x) => assert.strictEqual(decipher(c), x)
 
 test('10197115121', 'easy')
 test('98', 'b')

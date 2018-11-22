@@ -11,7 +11,7 @@ function numberOfClans (divisors, k) {
   return Object.keys(clans).length
 }
 
-const test = (div, k, ex) => assert.equal(numberOfClans(div, k), ex)
+const test = (div, k, ex) => assert.strictEqual(numberOfClans(div, k), ex)
 
 test([2, 3], 6, 4)
 test([2, 3, 4], 6, 5)

@@ -20,7 +20,7 @@ function stolenLunch (note) {
   return decoded
 }
 
-const test = (n, x) => assert.equal(stolenLunch(n), x)
+const test = (n, x) => assert.strictEqual(stolenLunch(n), x)
 
 test('n n', 'n n')
 test('n4v4r', 'never')

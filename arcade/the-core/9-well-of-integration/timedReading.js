@@ -4,3 +4,5 @@ function timedReading (maxLength, text) {
     .split(' ')
     .reduce((acc, val) => (val && val.length <= maxLength) ? acc + 1 : acc, 0)
 }
+
+module.exports = timedReading

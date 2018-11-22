@@ -34,4 +34,4 @@ s = 'co(de(fight)s)';
 s = 'The ((quick (brown) (fox) jumps over the lazy) dog)';
 // The god quick xof( )nworb jumps over the lazy
 console.log(reverseParentheses(s));
-// assert.equal(reverseParentheses(s), 'The god quick nworb xof jumps over the lazy');
+// assert.strictEqual(reverseParentheses(s), 'The god quick nworb xof jumps over the lazy');

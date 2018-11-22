@@ -7,7 +7,7 @@ function integerToStringOfFixedWidth (number, width) {
     : '0'.repeat(width - sn.length) + sn
 }
 
-const test = (n, w, x) => assert.equal(integerToStringOfFixedWidth(n, w), x)
+const test = (n, w, x) => assert.strictEqual(integerToStringOfFixedWidth(n, w), x)
 
 test(1234, 2, '34')
 test(1234, 4, '1234')

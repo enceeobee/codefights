@@ -14,7 +14,7 @@ function threeSplit (a) {
     cut2 = cut1 + 1
     sum1 += a[cut1 - 1]
 
-    while (sum1 === subsetSum && cut2 < aLen) {
+    while (sum1 === subsetSum && cut2 < aLen) { //eslint-disable-line
       sum2 += a[cut2 - 1]
 
       if (sum2 === subsetSum &&
@@ -30,7 +30,7 @@ function threeSplit (a) {
   return numSets
 }
 
-const test = (a, x) => assert.equal(threeSplit(a), x)
+const test = (a, x) => assert.strictEqual(threeSplit(a), x)
 
 test([0, -1, 0, -1, 0, -1], 4)
 test([-1, 0, -1, 0, -1, 0], 4)

@@ -11,7 +11,7 @@ function houseOfCats (legs) {
     .sort((a, b) => a - b)
 }
 
-const test = (legs, ex) => assert.deepEqual(houseOfCats(legs), ex)
+const test = (legs, ex) => assert.strictDeepEqual(houseOfCats(legs), ex)
 
 test(6, [1, 3])
 test(2, [1])

@@ -10,7 +10,7 @@ function reflectString (inputString) {
   return inputString.split('').map(c => mirror[c]).join('')
 }
 
-const test = (i, x) => assert.equal(reflectString(i), x)
+const test = (i, x) => assert.strictEqual(reflectString(i), x)
 
 test('name', 'mznv')
 test('abyz', 'zyba')

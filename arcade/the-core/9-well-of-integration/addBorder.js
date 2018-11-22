@@ -8,13 +8,13 @@ function addBorder (picture) {
   return paddedPic
 }
 
-const test = (p, x) => assert.deepEqual(addBorder(p), x)
+const test = (p, x) => assert.strictDeepEqual(addBorder(p), x)
 
 test(['abc',
   'ded'], ['*****',
-    '*abc*',
-    '*ded*',
-    '*****'])
+  '*abc*',
+  '*ded*',
+  '*****'])
 test(['a'], ['***',
   '*a*',
   '***'])

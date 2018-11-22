@@ -138,7 +138,7 @@ const tests = [
   }
 ]
 
-assert.deepEqual(getConnectedNodes(tests[0].parent, 1), [0, 3])
-assert.deepEqual(getConnectedNodes(tests[2].parent, 2), [0, 6, 7])
+assert.strictDeepEqual(getConnectedNodes(tests[0].parent, 1), [0, 3])
+assert.strictDeepEqual(getConnectedNodes(tests[2].parent, 2), [0, 6, 7])
 
-tests.forEach(({ parent, newRoot, expected }) => assert.deepEqual(changeRoot(parent, newRoot), expected))
+tests.forEach(({ parent, newRoot, expected }) => assert.strictDeepEqual(changeRoot(parent, newRoot), expected))

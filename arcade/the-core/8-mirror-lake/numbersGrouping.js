@@ -9,7 +9,7 @@ function numbersGrouping (a) {
   }, {})).length + a.length
 }
 
-const test = (a, expected) => assert.equal(numbersGrouping(a), expected)
+const test = (a, expected) => assert.strictEqual(numbersGrouping(a), expected)
 
 test([20000, 239, 10001, 999999, 10000, 20566, 29999], 11)
 test([10000, 20000, 30000, 40000, 50000, 60000, 10000, 120000, 150000, 200000, 300000, 1000000, 10000000, 100000000, 10000000], 28)

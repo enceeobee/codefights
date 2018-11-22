@@ -28,12 +28,12 @@ function differentSquares (matrix) {
   }, {})).length
 }
 
-const test = (matrix, expected) => assert.equal(differentSquares(matrix), expected)
+const test = (matrix, expected) => assert.strictEqual(differentSquares(matrix), expected)
 
 test([[1, 2, 1],
-      [2, 2, 2],
-      [2, 2, 2],
-      [1, 2, 3],
-      [2, 2, 1]], 6)
+  [2, 2, 2],
+  [2, 2, 2],
+  [1, 2, 3],
+  [2, 2, 1]], 6)
 
 console.log('All tests passed.')

@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert')
 // .25-.31 ms
 // function isPower(n) {
 //   'use strict';
@@ -47,112 +47,112 @@ const assert = require('assert');
 //   return false;
 // }
 
-function isPower(n) {
-  'use strict';
+function isPower (n) {
+  'use strict'
 
   // Yeah yeah...
-  if (n === 1) return true;
+  if (n === 1) return true
 
-  const squareRoot = Math.floor(Math.sqrt(n));
-  let divided = n;
+  const squareRoot = Math.floor(Math.sqrt(n))
+  let divided = n
 
   for (let i = squareRoot; i > 1 && divided >= i; i -= 1) {
-    divided = n;
-    while (divided % i === 0) if ((divided /= i) === i) return true;
+    divided = n
+    while (divided % i === 0) if ((divided /= i) === i) return true
   }
-  return false;
+  return false
 }
 
-let n;
-let expected;
-let actual;
+let n
+let expected
+let actual
 
-console.time('tests');
+console.time('tests')
 
-n = 125;
-expected = true;
-actual = isPower(n);
-assert.equal(actual, expected);
+n = 125
+expected = true
+actual = isPower(n)
+assert.strictEqual(actual, expected)
 
-n = 100;
-expected = true;
-actual = isPower(n);
-assert.equal(actual, expected);
+n = 100
+expected = true
+actual = isPower(n)
+assert.strictEqual(actual, expected)
 
-n = 11;
-expected = false;
-actual = isPower(n);
-assert.equal(actual, expected);
+n = 11
+expected = false
+actual = isPower(n)
+assert.strictEqual(actual, expected)
 
-n = 324;
-expected = true;
-actual = isPower(n);
-assert.equal(actual, expected);
+n = 324
+expected = true
+actual = isPower(n)
+assert.strictEqual(actual, expected)
 
-n = 12;
-expected = false;
-actual = isPower(n);
-assert.equal(actual, expected);
+n = 12
+expected = false
+actual = isPower(n)
+assert.strictEqual(actual, expected)
 
-n = 1;
-expected = true;
-actual = isPower(n);
-assert.equal(actual, expected);
+n = 1
+expected = true
+actual = isPower(n)
+assert.strictEqual(actual, expected)
 
-n = 2;
-expected = false;
-actual = isPower(n);
-assert.equal(actual, expected);
+n = 2
+expected = false
+actual = isPower(n)
+assert.strictEqual(actual, expected)
 
-n = 3;
-expected = false;
-actual = isPower(n);
-assert.equal(actual, expected);
+n = 3
+expected = false
+actual = isPower(n)
+assert.strictEqual(actual, expected)
 
-n = 4;
-expected = true;
-actual = isPower(n);
-assert.equal(actual, expected);
+n = 4
+expected = true
+actual = isPower(n)
+assert.strictEqual(actual, expected)
 
-n = 8;
-expected = true;
-actual = isPower(n);
-assert.equal(actual, expected);
+n = 8
+expected = true
+actual = isPower(n)
+assert.strictEqual(actual, expected)
 
-n = 9;
-expected = true;
-actual = isPower(n);
-assert.equal(actual, expected);
+n = 9
+expected = true
+actual = isPower(n)
+assert.strictEqual(actual, expected)
 
-n = 121;
-expected = true;
-actual = isPower(n);
-assert.equal(actual, expected);
+n = 121
+expected = true
+actual = isPower(n)
+assert.strictEqual(actual, expected)
 
-n = 289;
-expected = true;
-actual = isPower(n);
-assert.equal(actual, expected);
+n = 289
+expected = true
+actual = isPower(n)
+assert.strictEqual(actual, expected)
 
-n = 256;
-expected = true;
-actual = isPower(n);
-assert.equal(actual, expected);
+n = 256
+expected = true
+actual = isPower(n)
+assert.strictEqual(actual, expected)
 
-n = 350;
-expected = false;
-actual = isPower(n);
-assert.equal(actual, expected);
+n = 350
+expected = false
+actual = isPower(n)
+assert.strictEqual(actual, expected)
 
-n = 49;
-expected = true;
-actual = isPower(n);
-assert.equal(actual, expected);
+n = 49
+expected = true
+actual = isPower(n)
+assert.strictEqual(actual, expected)
 
-n = 72;
-expected = false;
-actual = isPower(n);
-assert.equal(actual, expected);
+n = 72
+expected = false
+actual = isPower(n)
+assert.strictEqual(actual, expected)
 
-console.timeEnd('tests');
-console.log('All tests passed.');
+console.timeEnd('tests')
+console.log('All tests passed.')

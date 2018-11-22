@@ -14,7 +14,7 @@ function minimalNumberOfCoins (coins, price) {
   return n
 }
 
-const test = (c, p, x) => assert.equal(minimalNumberOfCoins(c, p), x)
+const test = (c, p, x) => assert.strictEqual(minimalNumberOfCoins(c, p), x)
 
 test([1, 2, 10], 28, 6)
 test([1, 5, 10, 100], 239, 10)

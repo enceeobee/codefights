@@ -1,15 +1,15 @@
-const aArray = [];
-const bArray = [];
+const aArray = []
+const bArray = []
 
 for (let n = 1; n < 100001; n += 1) {
-  aArray.push(n);
-  bArray.push(n);
+  aArray.push(n)
+  bArray.push(n)
   // aArray.unshift(n);
   // bArray.unshift(n);
 }
 
-console.time('sumOfTwo');
-/*function sumOfTwo(a, b, v) {
+console.time('sumOfTwo')
+/* function sumOfTwo(a, b, v) {
   'use strict';
 
   const intSort = (a, b) => a - b;
@@ -34,25 +34,25 @@ console.time('sumOfTwo');
   }
 
   return false;
-}*/
+} */
 
-function sumOfTwo(a, b, v) {
-  'use strict';
+function sumOfTwo (a, b, v) {
+  'use strict'
 
   const aValues = a.reduce((acc, val) => {
-    acc[val] = val;
-    return acc;
-  }, {});
+    acc[val] = val
+    return acc
+  }, {})
 
   for (let i = 0; i < b.length; i += 1) {
-    if (aValues[v - b[i]]) return true;
+    if (aValues[v - b[i]]) return true
   }
 
-  return false;
+  return false
 }
 
-console.log(sumOfTwo([1, 2, 3], [10, 20, 30, 40], 420));
-console.log(sumOfTwo([10, 1, 5, 3, 8], [100, 6, 3, 1, 5], 4)); // true
-console.log(sumOfTwo(aArray, bArray, 200000));
+console.log(sumOfTwo([1, 2, 3], [10, 20, 30, 40], 420))
+console.log(sumOfTwo([10, 1, 5, 3, 8], [100, 6, 3, 1, 5], 4)) // true
+console.log(sumOfTwo(aArray, bArray, 200000))
 
-console.timeEnd('sumOfTwo'); // about 4-5 ms
+console.timeEnd('sumOfTwo') // about 4-5 ms

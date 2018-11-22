@@ -8,7 +8,7 @@ function electionsWinners (votes, k) {
   return winners.length
 }
 
-const test = (v, k, x) => assert.equal(electionsWinners(v, k), x)
+const test = (v, k, x) => assert.strictEqual(electionsWinners(v, k), x)
 
 test([2, 3, 5, 2], 3, 2)
 test([1, 3, 3, 1, 1], 0, 0)

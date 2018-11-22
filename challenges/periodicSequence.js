@@ -48,4 +48,4 @@ const tests = [
   }
 ]
 
-tests.forEach(test => assert.equal(periodicSequence(test.s0, test.a, test.b, test.m), test.x))
+tests.forEach(test => assert.strictEqual(periodicSequence(test.s0, test.a, test.b, test.m), test.x))

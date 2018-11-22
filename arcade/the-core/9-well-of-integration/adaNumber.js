@@ -24,7 +24,7 @@ function adaNumber (l) {
   return !isNaN(Number.parseInt(number, Number(base)))
 }
 
-const test = (l, x) => assert.equal(adaNumber(l), x)
+const test = (l, x) => assert.strictEqual(adaNumber(l), x)
 
 test('123_456_789', true)
 test('16#123abc#', true)

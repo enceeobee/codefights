@@ -54,7 +54,7 @@ function switchLights (a) {
   //   .map((val, i) => (val % 2 === 0) ? a[i] : Number(Boolean(!a[i])))
 }
 
-const test = (a, x) => assert.deepEqual(switchLights(a), x)
+const test = (a, x) => assert.strictDeepEqual(switchLights(a), x)
 
 test([1, 1, 1, 1, 1], [0, 1, 0, 1, 0])
 test([0, 0], [0, 0])

@@ -37,5 +37,5 @@ const tests = [
 
 tests.forEach(({ size, expected }) => {
   actual = constructArray(size)
-  assert.deepEqual(actual, expected)
+  assert.strictDeepEqual(actual, expected)
 })

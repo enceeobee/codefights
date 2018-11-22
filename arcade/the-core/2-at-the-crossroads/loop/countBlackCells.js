@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert')
 
 // function countBlackCells(n, m) {
 //   const nTimes2 = n * 2;
@@ -100,71 +100,71 @@ const assert = require('assert');
 //   return numBlack;
 // }
 
-function countBlackCells(n, m) {
-  'use strict';
-  const slope = -n / m;
+function countBlackCells (n, m) {
+  'use strict'
+  const slope = -n / m
 
-  let touched = 0;
-  let exit = [0, 0];
-  let entry;
+  let touched = 0
+  let exit = [0, 0]
+  let entry
 
   for (let i = 1; i <= m; i += 1) {
-    entry = exit;
-    exit = [i, slope * i];
+    entry = exit
+    exit = [i, slope * i]
 
-    touched += Math.ceil(entry[1]) - Math.floor(exit[1]);
+    touched += Math.ceil(entry[1]) - Math.floor(exit[1])
 
-    if (Math.round(exit[1]) === exit[1] && exit[1] !== -n) touched += 2;
+    if (Math.round(exit[1]) === exit[1] && exit[1] !== -n) touched += 2
   }
-  return touched;
+  return touched
 }
 
-let n;
-let m;
-let expected;
-let actual;
+let n
+let m
+let expected
+let actual
 
-n = 3;
-m = 4;
-expected = 6;
-actual = countBlackCells(n, m);
-assert.equal(actual, expected);
+n = 3
+m = 4
+expected = 6
+actual = countBlackCells(n, m)
+assert.strictEqual(actual, expected)
 
-n = 3;
-m = 3;
-expected = 7;
-actual = countBlackCells(n, m);
-assert.equal(actual, expected);
+n = 3
+m = 3
+expected = 7
+actual = countBlackCells(n, m)
+assert.strictEqual(actual, expected)
 
-n = 2;
-m = 5;
-expected = 6;
-actual = countBlackCells(n, m);
-assert.equal(actual, expected);
+n = 2
+m = 5
+expected = 6
+actual = countBlackCells(n, m)
+assert.strictEqual(actual, expected)
 
-n = 1;
-m = 3;
-expected = 3;
-actual = countBlackCells(n, m);
-assert.equal(actual, expected);
+n = 1
+m = 3
+expected = 3
+actual = countBlackCells(n, m)
+assert.strictEqual(actual, expected)
 
-n = 1;
-m = 239;
-expected = 239;
-actual = countBlackCells(n, m);
-assert.equal(actual, expected);
+n = 1
+m = 239
+expected = 239
+actual = countBlackCells(n, m)
+assert.strictEqual(actual, expected)
 
-n = 33;
-m = 44;
-expected = 86;
-actual = countBlackCells(n, m);
-assert.equal(actual, expected);
+n = 33
+m = 44
+expected = 86
+actual = countBlackCells(n, m)
+assert.strictEqual(actual, expected)
 
-n = 16;
-m = 8;
-expected = 30;
-actual = countBlackCells(n, m);
-assert.equal(actual, expected);
+n = 16
+m = 8
+expected = 30
+actual = countBlackCells(n, m)
+assert.strictEqual(actual, expected)
 
 // So, if odd, it adds another cell in the middle
 // slope = -5/2 = -2.5
@@ -176,17 +176,17 @@ assert.equal(actual, expected);
 'xx'// 1
 */
 
-n = 5;
-m = 2;
-expected = 6;// I think?
-actual = countBlackCells(n, m);
-assert.equal(actual, expected);
+n = 5
+m = 2
+expected = 6// I think?
+actual = countBlackCells(n, m)
+assert.strictEqual(actual, expected)
 
-n = 66666;
-m = 88888;
-expected = 177774;
-actual = countBlackCells(n, m);
-assert.equal(actual, expected);
+n = 66666
+m = 88888
+expected = 177774
+actual = countBlackCells(n, m)
+assert.strictEqual(actual, expected)
 
 /**
  * xxxxxxx
@@ -194,16 +194,16 @@ assert.equal(actual, expected);
  * area = n * m = 14
  */
 
-n = 239;
-m = 749;
-expected = 987;
-actual = countBlackCells(n, m);
-assert.equal(actual, expected);
+n = 239
+m = 749
+expected = 987
+actual = countBlackCells(n, m)
+assert.strictEqual(actual, expected)
 
-n = 14;
-m = 234;
-expected = 248;
-actual = countBlackCells(n, m);
-assert.equal(actual, expected);
+n = 14
+m = 234
+expected = 248
+actual = countBlackCells(n, m)
+assert.strictEqual(actual, expected)
 
-console.log('All tests passed.');
+console.log('All tests passed.')

@@ -27,4 +27,4 @@ const tests = [
   }
 ]
 
-tests.forEach(({ a, x }) => assert.deepEqual(digitRootSort(a), x))
+tests.forEach(({ a, x }) => assert.strictDeepEqual(digitRootSort(a), x))

@@ -26,7 +26,7 @@ function areSimilar (a, b) {
   return aCopy.every((n, i) => n === b[i])
 }
 
-const test = (a, b, x) => assert.equal(areSimilar(a, b), x)
+const test = (a, b, x) => assert.strictEqual(areSimilar(a, b), x)
 
 test([1, 2, 3], [1, 2, 3], true)
 test([1, 2, 3], [2, 1, 3], true)
