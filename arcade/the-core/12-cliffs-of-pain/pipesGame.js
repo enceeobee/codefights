@@ -1,53 +1,24 @@
 const assert = require('assert')
 
-/*
-  The pipes are represented by the numbers '1' to '7',
-  the sources are given as lowercase English letters, and
-  the corresponding sinks are marked by uppercase letters.
-  Empty cells are marked with '0'.
-
-  It is guaranteed that each letter from the English alphabet
-  either is not present in state, or appears there twice (in uppercase and lowercase).
-*/
-
-/*
-  So maybe we find all the sources, then follow the pipes to the
-  corresponding sink.
-
-  We can move one cell at a time for every sink. If one of the flows
-  ends, we return `-n`. If all sources find sinks, we return `n`
-*/
-
-/*
-  Let's keep a separate array called filledPipes that we'll progressively
-  fill in. If a cell in `state` has water in it, change the corresponding
-  cell in `filledPipes` to `true`.
-
-  At the end, return the number of `true` cells in filledPipes
-
-  This prevents us from double counting the `7` pipes (where they cross)
-*/
 class Source {
-  constructor (origin, letter) {
+  constructor ({ origin, sink, pourDir }) {
     this.origin = origin
-    const dirs = ['up', 'right', 'down', 'left']
+    this.pourDir = pourDir
+    this.sink = sink
+    this.curRow = origin[0]
+    this.curCol = origin[1]
+    this.isPouring = true
+  }
 
-    dirs.forEach(d => {
-      this[d] = {
-        origin,
-        curRow: origin[0],
-        curCol: origin[1],
-        isPouring: true,
-        pourDir: d,
-        sink: letter.toUpperCase()
-      }
-    })
+  isAtOrigin () {
+    return this.curRow === this.origin[0] && this.curCol === this.origin[1]
   }
 }
 
 function pipesGame (state) {
   const sources = []
   const filledPipes = state.map(s => Array(s.length).fill(false))
+  const dirs = ['up', 'right', 'down', 'left']
   let isWinner = true
 
   // Find all sources
@@ -56,7 +27,13 @@ function pipesGame (state) {
 
     for (let col = 0; col < state[row].length; col++) {
       if (/[a-z]/.test(state[row][col])) {
-        sources.push(new Source([row, col], state[row][col]))
+        dirs.forEach(dir => {
+          sources.push(new Source({
+            pourDir: dir,
+            origin: [row, col],
+            sink: state[row][col].toUpperCase()
+          }))
+        })
       }
     }
   }
@@ -70,117 +47,86 @@ function pipesGame (state) {
     let foundPipe = false
     let foundSink = false
 
-    const pour = {
-      up (source) {
-        const isAtOrigin = source.curRow === source.origin[0] && source.curCol === source.origin[1]
+    const checkEdge = (source, edgeCondition) => {
+      if (edgeCondition) {
+        source.isPouring = false
+        isWinner = source.isAtOrigin()
+        return true
+      }
 
-        if (source.curRow <= 0) {
-          source.isPouring = false
-          isWinner = isAtOrigin
-          return
+      return false
+    }
+
+    const pour = (source) => {
+      const dirs = {
+        up: {
+          edgeCondition: (source.curRow <= 0),
+          next () {
+            return state[--source.curRow][source.curCol]
+          },
+          pipeRegex: /[1347]/,
+          updateDir (next) {
+            if (next === '3') source.pourDir = 'right'
+            else if (next === '4') source.pourDir = 'left'
+          }
+        },
+        right: {
+          edgeCondition: (source.curCol >= state[source.curRow].length - 1),
+          next () {
+            return state[source.curRow][++source.curCol]
+          },
+          pipeRegex: /[2457]/,
+          updateDir (next) {
+            if (next === '4') source.pourDir = 'down'
+            else if (next === '5') source.pourDir = 'up'
+          }
+        },
+        down: {
+          edgeCondition: (source.curRow >= state.length - 1),
+          next () {
+            return state[++source.curRow][source.curCol]
+          },
+          pipeRegex: /[1567]/,
+          updateDir (next) {
+            if (next === '5') source.pourDir = 'left'
+            else if (next === '6') source.pourDir = 'right'
+          }
+        },
+        left: {
+          edgeCondition: (source.curCol === 0),
+          next () {
+            return state[source.curRow][--source.curCol]
+          },
+          pipeRegex: /[2367]/,
+          updateDir (next) {
+            if (next === '3') source.pourDir = 'down'
+            else if (next === '6') source.pourDir = 'up'
+          }
         }
+      }
 
-        next = state[--source.curRow][source.curCol]
-        foundPipe = /[1347]/.test(next)
-        foundSink = next === source.sink
+      const isAtOrigin = source.isAtOrigin()
+      const flow = dirs[source.pourDir]
 
-        if (foundPipe || foundSink) {
-          if (next === '3') source.pourDir = 'right'
-          else if (next === '4') source.pourDir = 'left'
+      if (checkEdge(source, flow.edgeCondition)) return
 
-          if (!foundSink) result.push([source.curRow, source.curCol])
+      next = flow.next()
+      foundPipe = flow.pipeRegex.test(next)
+      foundSink = next === source.sink
 
-          source.isPouring = !foundSink
-        } else {
-          source.isPouring = false
-          isWinner = isAtOrigin
-        }
-      },
-      right (source) {
-        const isAtOrigin = source.curRow === source.origin[0] && source.curCol === source.origin[1]
+      if (foundPipe || foundSink) {
+        flow.updateDir(next)
 
-        if (source.curCol >= state[source.curRow].length - 1) {
-          source.isPouring = false
-          isWinner = isAtOrigin
-          return
-        }
-
-        next = state[source.curRow][++source.curCol]
-        foundPipe = /[2457]/.test(next)
-        foundSink = next === source.sink
-
-        if (foundPipe || foundSink) {
-          // If we found a pipe, change directions
-          if (next === '4') source.pourDir = 'down'
-          else if (next === '5') source.pourDir = 'up'
-
-          if (!foundSink) result.push([source.curRow, source.curCol])
-
-          source.isPouring = !foundSink
-        } else {
-          source.isPouring = false
-          isWinner = isAtOrigin
-        }
-      },
-      down (source) {
-        const isAtOrigin = source.curRow === source.origin[0] && source.curCol === source.origin[1]
-
-        if (source.curRow >= state.length - 1) {
-          source.isPouring = false
-          isWinner = isAtOrigin
-          return
-        }
-
-        next = state[++source.curRow][source.curCol]
-        foundPipe = /[1567]/.test(next)
-        foundSink = next === source.sink
-
-        if (foundPipe || foundSink) {
-          if (next === '5') source.pourDir = 'left'
-          else if (next === '6') source.pourDir = 'right'
-
-          if (!foundSink) result.push([source.curRow, source.curCol])
-
-          source.isPouring = !foundSink
-        } else {
-          source.isPouring = false
-          isWinner = isAtOrigin
-        }
-      },
-      left (source) {
-        const isAtOrigin = source.curRow === source.origin[0] && source.curCol === source.origin[1]
-
-        if (source.curCol === 0) {
-          source.isPouring = false
-          isWinner = isAtOrigin
-          return
-        }
-
-        next = state[source.curRow][--source.curCol]
-        foundPipe = /[2367]/.test(next)
-        foundSink = next === source.sink
-
-        if (foundPipe || foundSink) {
-          if (next === '3') source.pourDir = 'down'
-          else if (next === '6') source.pourDir = 'up'
-
-          if (!foundSink) result.push([source.curRow, source.curCol])
-
-          source.isPouring = !foundSink
-        } else {
-          source.isPouring = false
-          isWinner = isAtOrigin
-        }
+        if (!foundSink) result.push([source.curRow, source.curCol])
+        source.isPouring = !foundSink
+      } else {
+        source.isPouring = false
+        isWinner = isAtOrigin
       }
     }
 
     sources.forEach((source) => {
-      const { up, right, down, left } = source
-
-      if (up.isPouring) pour[up.pourDir](up)
-      if (right.isPouring) pour[right.pourDir](right)
-      if (down.isPouring) pour[down.pourDir](down)
-      if (left.isPouring) pour[left.pourDir](left)
+      if (source.isPouring) pour(source)
     })
 
     return isWinner ? result : []
