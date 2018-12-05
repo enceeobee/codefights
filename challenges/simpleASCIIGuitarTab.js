@@ -1,71 +1,21 @@
 const assert = require('assert')
 
-// let frets = {
-//   'E2': [6, 0],
-//   'F2': [6, 1],
-//   'F#2': [6, 2],
-//   'G2': [6, 3],
-//   'G#2': [6, 4],
-
-//   'A2': [5, 0],
-//   'A#2': [5, 1],
-//   'B2': [5, 2],
-//   'C3': [5, 3],
-//   'C#3': [5, 4],
-
-//   'D3': [4, 0],
-//   'D#3': [4, 1],
-//   'E3': [4, 2],
-//   'F3': [4, 3],
-//   'F#3': [4, 4],
-
-//   'G3': [3, 0],
-//   'G#3': [3, 1],
-//   'A3': [3, 2],
-//   'A#3': [3, 3],
-
-//   'B3': [2, 0],
-//   'C4': [2, 1],
-//   'C#4': [2, 2],
-//   'D4': [2, 3],
-//   'D#4': [2, 4],
-
-//   'E4': [1, 0],
-//   'F4': [1, 1],
-//   'F#4': [1, 2],
-//   'G4': [1, 3],
-//   'G#4': [1, 4]
-// }
-
 function simpleASCIIGuitarTab (notes) {
-  const intervals = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-  const tab = ['e ||',
+  const fretNotes = generateFretNotes()
+  const tab = [
+    'e ||',
     'B ||',
     'G ||',
     'D ||',
     'A ||',
-    'E ||']
+    'E ||'
+  ]
 
   let string
   let fretted
-  let frets = {}
-  let octave = 2
-  let note = 4 // 'E'
-
-  for (let string = 6; string > 0; string--) {
-    let maxFrets = 5
-    if (string === 3) maxFrets = 4
-    if (string === 1) maxFrets = 24
-
-    for (let i = 0; i < maxFrets; i++) {
-      frets[intervals[note] + octave] = [string, i]
-      note = (note === intervals.length - 1) ? 0 : note + 1
-      if (note === 0) octave++
-    }
-  }
 
   notes.split(' ').forEach((note, i, a) => {
-    fretted = frets[note]
+    fretted = fretNotes[note]
     string = fretted[0] - 1
 
     for (let j = 0; j < 6; j++) {
@@ -74,6 +24,27 @@ function simpleASCIIGuitarTab (notes) {
   })
 
   return tab
+}
+
+function generateFretNotes () {
+  const intervals = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+  const fretNotes = {}
+  let octave = 2
+  let noteIndex = 4 // 'E'
+
+  for (let string = 6; string > 0; string--) {
+    let maxFrets = 5
+    if (string === 3) maxFrets = 4
+    if (string === 1) maxFrets = 24
+
+    for (let i = 0; i < maxFrets; i++) {
+      fretNotes[intervals[noteIndex] + octave] = [string, i]
+      noteIndex = (noteIndex === intervals.length - 1) ? 0 : noteIndex + 1
+      if (noteIndex === 0) octave++
+    }
+  }
+
+  return fretNotes
 }
 
 const makeTest = (n, x) => ({ n, x })
