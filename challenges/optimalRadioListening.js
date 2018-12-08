@@ -1,28 +1,87 @@
 const assert = require('assert')
 
+/*
+  Early return:
+    - if schedules.length === 1; just add up the seconds and return the score
+
+  Let's:
+    1. convert all times into seconds (or milliseconds)
+    2. Trim all starting times to commuteStart
+    3. Sequence all programs?
+    4. Keep an eye out for the schedule going into the next day?
+
+    maybe our schedule looks like
+
+    [
+      {
+        //program: 'Good music',
+        score: enjoymentScore
+        ends: endMs,
+        starts: startMs
+      }
+      // order by start
+    ]
+
+    So we find out what's on now (make a function for this), then listen to it until:
+      a) it ends; or
+      b) a better alternative begins
+
+    When we switch, add the enjoymentLevel * secondsListening to enjoyment
+*/
 function optimalRadioListening (schedules, commuteHours) {
-  const enjoyment = {
+  let enjoyment = 0
+  const enjoymentScores = {
     'Good music': 10,
     'News': 5,
-    'Weather': 5,
+    'Weather': 3,
     'Talk': 1,
     'Bad music': -2,
     'Advertisements': -25
   }
+  const dateString = '6/6/06'
+  const nextYear = '6/6/07'
+  const schedule = schedules
+    .reduce((acc, val, c) => {
+      acc.push(
+        ...val.map((program, i) => {
+          let [prog, time] = program.split('(')
+          let start = new Date(`${dateString} ${time.slice(0, -1)}`)
+          let end = new Date(`${nextYear} ${time.slice(0, -1)}`)
+
+          if (i < val.length - 1) {
+            let nextTime = val[i + 1].split('(')[1]
+            end = new Date(`${dateString} ${nextTime.slice(0, -1)}`)
+          }
+
+          return {
+            start,
+            end,
+            score: enjoymentScores[prog.trim()],
+            program: prog.trim(),
+            channel: `${c}-${i}`
+          }
+        })
+      )
+
+      return acc
+    }, [])
+    .sort((a, b) => a.start - b.start)
 
   const [commuteStart, commuteEnd] = commuteHours.split(' - ')
+  const endTime = new Date(`${dateString} ${commuteEnd}`).getTime()
+  let currentTime = new Date(`${dateString} ${commuteStart}`).getTime()
 
-  // console.log(startTime, endTime)
+  // Barf - this is slow, naive, and inefficient.
+  while (currentTime < endTime) {
+    enjoyment += schedule.filter(({ start, end }) => start <= currentTime && end > currentTime)
+      .sort((a, b) => a.score - b.score)
+      .pop()
+      .score
 
-  /*
-    Let's:
-      1. convert all times into seconds (or milliseconds)
-      2. Trim all starting times to commuteStart
-      3. Sequence all programs?
-  */
+    currentTime += 1000
+  }
 
-
-  return 0
+  return enjoyment
 }
 
 const makeTest = (s, c, x) => ({ s, c, x })
