@@ -1,67 +1,55 @@
 const assert = require('assert')
 
 function buildPalindrome (st) {
-  'use strict'
+  if (st === st.split('').reverse().join('')) return st
 
-  let half = Math.floor(st.length / 2)
-  let isPal = false
-  let pal = st
-  let i
+  let innerPalindrome = ''
+  let midpoint = (st.length % 2 === 1) ? Math.floor(st.length / 2) : st.length / 2 - 1
 
-  // original string is palindromic
-  if (st.slice(0, half + 1) === st.slice(half).split('').reverse().join('')) return st
+  for (midpoint; midpoint < st.length; midpoint++) {
+    innerPalindrome = st[midpoint]
 
-  while (!isPal) {
-    for (i = 1; i < half; i += 1) {
-      if (!pal[half + i]) {
-        isPal = true
-        break
+    let i = 1
+    for (i; i < st.length - midpoint; i++) {
+      if (st[midpoint - i] === st[midpoint + i]) {
+        innerPalindrome = st[midpoint - i] + innerPalindrome + st[midpoint + i]
       } else {
-        isPal = (pal[half - i] === pal[half + i])
+        break
       }
-      // isPal = (!pal[half + i]) || (pal[half - i] === pal[half + i]);
-      // if (isPal) break;
     }
 
-    half += 1
+    // We've reached the end of st with a valid inner palindrome
+    if (i === st.length - midpoint && innerPalindrome.length > 1) {
+      break
+    }
   }
 
-  return pal + pal.slice(0, half - i).split('').reverse().join('')
+  // Didn't find any inner palindromes, and st ends with consecutive letters
+  if (midpoint === st.length && st[st.length - 2] === st[st.length - 1]) {
+    innerPalindrome += innerPalindrome
+  }
+
+  const prefix = st.slice(0, st.length - innerPalindrome.length)
+
+  return prefix + innerPalindrome + prefix.split('').reverse().join('')
 }
 
-let st = 'abcdc'
-let expected = 'abcdcba'
-let actual = buildPalindrome(st)
-assert.strictEqual(actual, expected)
-
-st = 'ababab'
-expected = 'abababa'
-actual = buildPalindrome(st)
-assert.strictEqual(actual, expected)
-
-st = 'race'
-expected = 'racecar'
-actual = buildPalindrome(st)
-assert.strictEqual(actual, expected)
-
-st = 'racec'
-expected = 'racecar'
-actual = buildPalindrome(st)
-assert.strictEqual(actual, expected)
-
-st = 'acec'
-expected = 'aceca'
-actual = buildPalindrome(st)
-assert.strictEqual(actual, expected)
-
-st = 'raceca'
-expected = 'racecar'
-actual = buildPalindrome(st)
-assert.strictEqual(actual, expected)
-
-st = 'racecar'
-expected = 'racecar'
-actual = buildPalindrome(st)
-assert.strictEqual(actual, expected)
+const makeTest = (s, x) => ({ s, x })
+const tests = [
+  makeTest('abcdc', 'abcdcba'),
+  makeTest('ababab', 'abababa'),
+  makeTest('abba', 'abba'),
+  makeTest('abaa', 'abaaba'),
+  makeTest('aaaaba', 'aaaabaaaa'),
+  makeTest('race', 'racecar'),
+  makeTest('racec', 'racecar'),
+  makeTest('acec', 'aceca'),
+  makeTest('raceca', 'racecar'),
+  makeTest('racecar', 'racecar'),
+  makeTest('abcabc', 'abcabcbacba'),
+  makeTest('cbdbedffcg', 'cbdbedffcgcffdebdbc'),
+  makeTest('euotmn', 'euotmnmtoue')
+]
+tests.forEach(test => assert.strictEqual(buildPalindrome(test.s), test.x))
 
 console.log('All tests passed.')
