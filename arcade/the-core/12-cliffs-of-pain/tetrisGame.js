@@ -117,7 +117,7 @@ function generateOptimizedPiece (board, piece) {
   rotations.forEach((rotation, rotationCount) => {
     let rows
 
-    console.log('rotation', rotation)
+    // console.log('rotation', rotation)
 
 
     for (let r = 19; r >= rotation.length - 1; r--) {
@@ -125,49 +125,63 @@ function generateOptimizedPiece (board, piece) {
         doesFit = true
         rows = []
 
-        for (let rr = rotation.length - 1; rr <= 0; rr--) {
-          rows.push(board[r - rr])
+        let rowOffset = 0
 
-          for (let rc = 0; rc < rotation[0].length; rc++) {
+        let pieceRow = rotation.length - 1 - rowOffset
+        while (doesFit && pieceRow >= 0) {
+          let colOffset = 0
 
-            // console.log(`[${}]`)
+          for (let pieceCol = 0 + colOffset; pieceCol < rotation[0].length; pieceCol++) {
+            const boardRow = r - rowOffset
+            const boardCol = c + colOffset++
 
-            if (board[r - rr][c + rc] !== '.') {
+            // TODO - this is borked
+            rows.push(board[boardRow])
 
-              // We've hit a solid block in the board, now check if we can still fit the piece
+            // console.log(`board cell: [${boardRow},${boardCol}]`)
+            // console.log(`piece cell: [${pieceRow},${pieceCol}]`)
 
-              // console.log('rotation.length - 1 - rr', rotation.length - 1 - rr)
-              // console.log(`[${rotation.length - 1 - rr}, ${rc}]`)
-              // console.log(`broke at board[${rr}][${rc}]`)
-              // console.log('rr', rr, 'rc', rc)
+            /*
+              Should check:
+              board  | piece
+              [19,2] | [1,0]
+              [19,3] | [1,1]
+              [19,4] | [1,2]
+              [18,2] | [0,0]
+              [18,3] | [0,1]
+              [18,4] | [0,2]
+            */
 
-              // so board[19,2] == rotation[1,0] (not [0,0])
-              // so rotation needs to be checked like
-              // [1,0], [1,1], [1,2], [0,0], [0,1], [0,2]
-
-              doesFit = false
-              break
-            }
+            doesFit = doesFit && !(board[boardRow][boardCol] === '#' && rotation[pieceRow][pieceCol] === '#')
           }
-
-          if (!doesFit) break
+          rowOffset++
+          pieceRow--
         }
 
         if (doesFit) {
 
 
 
-          // console.log(`rotation ${rotationCount} fits at [${r}, ${c}]`)
+          // console.log(`rotation ${rotationCount} fits at [${r},${c}]`)
 
 
 
-          let blocksOccupiedInRowsCount = calculateBlocksInRowOccupied(rotation, rows)
+          const blocksOccupiedInRowsCount = calculateBlocksInRowOccupied(rotation, rows)
 
           const isOccupyingFewerBlocks = blocksOccupiedInRowsCount < optimizedPiece.blocksOccupiedInRowsCount
           const hasFewerRotations = rotationCount < optimizedPiece.rotationCount
           const isFartherLeft = c < optimizedPiece.colIndex
 
-          if (isOccupyingFewerBlocks || hasFewerRotations || isFartherLeft) {
+          // console.log('isOccupyingFewerBlocks', isOccupyingFewerBlocks)
+          // console.log('hasFewerRotations', hasFewerRotations)
+          // console.log('isFartherLeft', isFartherLeft)
+
+          // if (isOccupyingFewerBlocks || hasFewerRotations || isFartherLeft) {
+          if (
+            isOccupyingFewerBlocks ||
+            hasFewerRotations ||
+            (hasFewerRotations && isFartherLeft)
+          ) {
             optimizedPiece.blocksOccupiedInRowsCount = blocksOccupiedInRowsCount
             optimizedPiece.rotationCount = rotationCount
             optimizedPiece.colIndex = c
@@ -213,6 +227,18 @@ function calculateLines (board) {
 }
 
 function calculateBlocksInRowOccupied (piece, rows) {
+
+
+  console.log('piece, rows', piece, rows)
+
+
+  /*
+    The total number of blocks in the rows this piece will
+    occupy after falling down is maximized;
+
+    TODO - So maybe we have to check each row, and record the max number
+    of occupied cells.
+  */
   let boardRowCount
   let pieceRowCount
 
@@ -220,7 +246,8 @@ function calculateBlocksInRowOccupied (piece, rows) {
     boardRowCount = val.reduce((rAcc, block) => (block !== '.') ? rAcc + 1 : rAcc, 0)
     pieceRowCount = piece[i].reduce((pAcc, block) => (block !== '.') ? pAcc + 1 : pAcc, 0)
 
-    return acc + boardRowCount + pieceRowCount
+    // return acc + boardRowCount + pieceRowCount
+    return Math.max(acc, boardRowCount + pieceRowCount)
   }, 0)
 }
 
@@ -231,7 +258,7 @@ function placePiece ({ body, colIndex, rowIndex }, board) {
   for (let r = rowIndex; r > rowIndex - body.length; r--) {
     pieceC = 0
     for (let c = colIndex; c < colIndex + body[0].length; c++) {
-      board[r][c] = body[pieceR][pieceC]
+      if (body[pieceR][pieceC] === '#') board[r][c] = body[pieceR][pieceC]
       pieceC++
     }
     pieceR--
@@ -241,7 +268,8 @@ function placePiece ({ body, colIndex, rowIndex }, board) {
 function clearLines (board) {
   for (let r = 19; r >= 0; r--) {
     if (board[r].every(block => block !== '.')) {
-      board.splice(r, 1, '..........'.split(''))
+      board.splice(r, 1)
+      board.unshift('..........'.split(''))
     }
   }
 }
@@ -329,30 +357,30 @@ console.log('\n*** all rotations work ***\n')
 
 const makeTest = (p, x) => ({ p, x })
 const tests = [
-  // makeTest([
-  //   [
-  //     ['.', '#', '.'],
-  //     ['#', '#', '#']
-  //   ],
-  //   [
-  //     ['#', '.', '.'],
-  //     ['#', '#', '#']
-  //   ],
-  //   [
-  //     ['#', '#', '.'],
-  //     ['.', '#', '#']
-  //   ],
-  //   [
-  //     ['#', '#', '#', '#']
-  //   ],
-  //   [
-  //     ['#', '#', '#', '#']
-  //   ],
-  //   [
-  //     ['#', '#'],
-  //     ['#', '#']
-  //   ]
-  // ], 1),
+  makeTest([
+    [
+      ['.', '#', '.'],
+      ['#', '#', '#']
+    ],
+    // [
+    //   ['#', '.', '.'],
+    //   ['#', '#', '#']
+    // ],
+    // [
+    //   ['#', '#', '.'],
+    //   ['.', '#', '#']
+    // ],
+    // [
+    //   ['#', '#', '#', '#']
+    // ],
+    // [
+    //   ['#', '#', '#', '#']
+    // ],
+    // [
+    //   ['#', '#'],
+    //   ['#', '#']
+    // ]
+  ], 1),
 
   // makeTest([
   //   [['#', '#'], ['#', '#']],
@@ -398,21 +426,35 @@ const tests = [
   // ], 1)
 
   // Custom
-  makeTest([
-    [
-      ['.', '#', '.'],
-      ['#', '#', '#']
-    ],
-    [
-      ['#', '#', '.'],
-      ['.', '#', '#']
-    ]
-  ], 1),
+  // makeTest([
+  //   [
+  //     ['.', '#', '.'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '.'],
+  //     ['.', '#', '#']
+  //   ]
+  // ], 0),
   // makeTest([
   //   [
   //     '#'.repeat(10).split('')
   //   ]
   // ], 1)
+  // makeTest([
+  //   [
+  //     ['.', '#', '.'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '.', '.'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '.'],
+  //     ['.', '#', '#']
+  //   ]
+  // ], 0),
 ]
 
 tests.forEach(t => assert.deepStrictEqual(tetrisGame(t.p), t.x))
