@@ -115,15 +115,14 @@ function generateOptimizedPiece (board, piece) {
   }
 
   rotations.forEach((rotation, rotationCount) => {
-    let rows
+    // let rows
 
     // console.log('rotation', rotation)
-
 
     for (let r = 19; r >= rotation.length - 1; r--) {
       for (let c = 0; c <= 10 - rotation[0].length; c++) {
         doesFit = true
-        rows = []
+        // rows = []
 
         let rowOffset = 0
 
@@ -136,7 +135,7 @@ function generateOptimizedPiece (board, piece) {
             const boardCol = c + colOffset++
 
             // TODO - this is borked
-            rows.push(board[boardRow])
+            // rows.push(board[boardRow])
 
             // console.log(`board cell: [${boardRow},${boardCol}]`)
             // console.log(`piece cell: [${pieceRow},${pieceCol}]`)
@@ -159,16 +158,13 @@ function generateOptimizedPiece (board, piece) {
         }
 
         if (doesFit) {
-
-
-
           // console.log(`rotation ${rotationCount} fits at [${r},${c}]`)
 
+          // const blocksOccupiedInRowsCount = calculateBlocksInRowOccupied(rotation, rows)
+          const blocksOccupiedInRowsCount = calculateBlocksInRowOccupied(rotation, board, r, c)
 
-
-          const blocksOccupiedInRowsCount = calculateBlocksInRowOccupied(rotation, rows)
-
-          const isOccupyingFewerBlocks = blocksOccupiedInRowsCount < optimizedPiece.blocksOccupiedInRowsCount
+          // const isOccupyingFewerBlocks = blocksOccupiedInRowsCount < optimizedPiece.blocksOccupiedInRowsCount
+          const isOccupyingMoreBlocks = blocksOccupiedInRowsCount > optimizedPiece.blocksOccupiedInRowsCount
           const hasFewerRotations = rotationCount < optimizedPiece.rotationCount
           const isFartherLeft = c < optimizedPiece.colIndex
 
@@ -178,7 +174,8 @@ function generateOptimizedPiece (board, piece) {
 
           // if (isOccupyingFewerBlocks || hasFewerRotations || isFartherLeft) {
           if (
-            isOccupyingFewerBlocks ||
+            // isOccupyingFewerBlocks ||
+            isOccupyingMoreBlocks ||
             hasFewerRotations ||
             (hasFewerRotations && isFartherLeft)
           ) {
@@ -226,29 +223,46 @@ function calculateLines (board) {
   return lineCount
 }
 
-function calculateBlocksInRowOccupied (piece, rows) {
+// function calculateBlocksInRowOccupied (piece, rows) {
 
+//   console.log('piece, rows', piece, rows)
 
-  console.log('piece, rows', piece, rows)
+//   /*
+//     The total number of blocks in the rows this piece will
+//     occupy after falling down is maximized;
 
+//     TODO - So maybe we have to check each row, and record the max number
+//     of occupied cells.
+//   */
+//   let boardRowCount
+//   let pieceRowCount
 
-  /*
-    The total number of blocks in the rows this piece will
-    occupy after falling down is maximized;
+//   return rows.reduce((acc, val, i) => {
+//     boardRowCount = val.reduce((rAcc, block) => (block !== '.') ? rAcc + 1 : rAcc, 0)
+//     pieceRowCount = piece[i].reduce((pAcc, block) => (block !== '.') ? pAcc + 1 : pAcc, 0)
 
-    TODO - So maybe we have to check each row, and record the max number
-    of occupied cells.
-  */
-  let boardRowCount
-  let pieceRowCount
+//     // return acc + boardRowCount + pieceRowCount
+//     return Math.max(acc, boardRowCount + pieceRowCount)
+//   }, 0)
+// }
+function calculateBlocksInRowOccupied (piece, board, row, col) {
+  const boardCopy = board.map(row => row.map(block => block + ''))
+  const pieceToPlace = {
+    body: piece,
+    colIndex: col,
+    rowIndex: row
+  }
+  let maxOccupiedBlocksCount = 0
+  let occupiedBlockCount = 0
 
-  return rows.reduce((acc, val, i) => {
-    boardRowCount = val.reduce((rAcc, block) => (block !== '.') ? rAcc + 1 : rAcc, 0)
-    pieceRowCount = piece[i].reduce((pAcc, block) => (block !== '.') ? pAcc + 1 : pAcc, 0)
+  placePiece(pieceToPlace, boardCopy)
 
-    // return acc + boardRowCount + pieceRowCount
-    return Math.max(acc, boardRowCount + pieceRowCount)
-  }, 0)
+  for (let r = 0; r < 20; r++) {
+    occupiedBlockCount = boardCopy[r].reduce((acc, block) => (block !== '.') ? acc + 1 : acc, 0)
+    if (occupiedBlockCount > maxOccupiedBlocksCount) maxOccupiedBlocksCount = occupiedBlockCount
+  }
+
+  return maxOccupiedBlocksCount
 }
 
 function placePiece ({ body, colIndex, rowIndex }, board) {
@@ -270,6 +284,7 @@ function clearLines (board) {
     if (board[r].every(block => block !== '.')) {
       board.splice(r, 1)
       board.unshift('..........'.split(''))
+      r++
     }
   }
 }
@@ -279,73 +294,73 @@ function draw (board) {
   board.forEach(row => console.log(row.join(' ')))
 }
 
-const rotations = [
-  [
-    // 1a
-    [
-      ['.', '#', '.'],
-      ['#', '#', '#']
-    ],
-    [
-      ['#', '.'],
-      ['#', '#'],
-      ['#', '.']
-    ]
-  ],
-  // 1b
-  [
-    [
-      ['#', '.'],
-      ['#', '#'],
-      ['#', '.']
-    ],
-    [
-      ['#', '#', '#'],
-      ['.', '#', '.']
-    ]
-  ],
-  // 1c
-  [
-    [
-      ['#', '#', '#'],
-      ['.', '#', '.']
-    ],
-    [
-      ['.', '#'],
-      ['#', '#'],
-      ['.', '#']
-    ]
-  ],
+// const rotations = [
+//   [
+//     // 1a
+//     [
+//       ['.', '#', '.'],
+//       ['#', '#', '#']
+//     ],
+//     [
+//       ['#', '.'],
+//       ['#', '#'],
+//       ['#', '.']
+//     ]
+//   ],
+//   // 1b
+//   [
+//     [
+//       ['#', '.'],
+//       ['#', '#'],
+//       ['#', '.']
+//     ],
+//     [
+//       ['#', '#', '#'],
+//       ['.', '#', '.']
+//     ]
+//   ],
+//   // 1c
+//   [
+//     [
+//       ['#', '#', '#'],
+//       ['.', '#', '.']
+//     ],
+//     [
+//       ['.', '#'],
+//       ['#', '#'],
+//       ['.', '#']
+//     ]
+//   ],
 
-  // 2
-  // 3
-  // 4
-  [
-    [
-      ['#', '#', '#', '#']
-    ],
-    [
-      ['#'],
-      ['#'],
-      ['#'],
-      ['#']
-    ]
-  ],
-  [
-    [
-      ['#'],
-      ['#'],
-      ['#'],
-      ['#']
-    ],
-    [
-      ['#', '#', '#', '#']
-    ]
-  ]
-]
-rotations.forEach(r => assert.deepStrictEqual(rotate(r[0]), r[1]))
+//   // 2
+//   // 3
+//   // 4
+//   [
+//     [
+//       ['#', '#', '#', '#']
+//     ],
+//     [
+//       ['#'],
+//       ['#'],
+//       ['#'],
+//       ['#']
+//     ]
+//   ],
+//   [
+//     [
+//       ['#'],
+//       ['#'],
+//       ['#'],
+//       ['#']
+//     ],
+//     [
+//       ['#', '#', '#', '#']
+//     ]
+//   ]
+// ]
+// rotations.forEach(r => assert.deepStrictEqual(rotate(r[0]), r[1]))
 
-console.log('\n*** all rotations work ***\n')
+// console.log('\n*** all rotations work ***\n')
 
 // const expected = {
 //   rotationCount: 0,
@@ -357,30 +372,30 @@ console.log('\n*** all rotations work ***\n')
 
 const makeTest = (p, x) => ({ p, x })
 const tests = [
-  makeTest([
-    [
-      ['.', '#', '.'],
-      ['#', '#', '#']
-    ],
-    // [
-    //   ['#', '.', '.'],
-    //   ['#', '#', '#']
-    // ],
-    // [
-    //   ['#', '#', '.'],
-    //   ['.', '#', '#']
-    // ],
-    // [
-    //   ['#', '#', '#', '#']
-    // ],
-    // [
-    //   ['#', '#', '#', '#']
-    // ],
-    // [
-    //   ['#', '#'],
-    //   ['#', '#']
-    // ]
-  ], 1),
+  // makeTest([
+  //   [
+  //     ['.', '#', '.'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '.', '.'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '.'],
+  //     ['.', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ]
+  // ], 1),
 
   // makeTest([
   //   [['#', '#'], ['#', '#']],
@@ -397,24 +412,70 @@ const tests = [
   //   [['#', '#'], ['#', '#']]
   // ], 1),
 
-  // makeTest([
-  //   [['.', '#', '#'], ['#', '#', '.']],
-  //   [['.', '#', '.'], ['#', '#', '#']],
-  //   [['#', '#', '.'], ['.', '#', '#']],
-  //   [['.', '#', '.'], ['#', '#', '#']],
-  //   [['#', '#', '#', '#']],
-  //   [['#', '.', '.'], ['#', '#', '#']],
-  //   [['#', '#'], ['#', '#']],
-  //   [['#', '#', '#'], ['.', '.', '#']],
-  //   [['.', '#', '#'], ['#', '#', '.']],
-  //   [['.', '#', '.'], ['#', '#', '#']],
-  //   [['#', '#', '.'], ['.', '#', '#']],
-  //   [['.', '#', '.'], ['#', '#', '#']],
-  //   [['#', '#', '#', '#']],
-  //   [['#', '.', '.'], ['#', '#', '#']],
-  //   [['#', '#'], ['#', '#']],
-  //   [['#', '#', '#'], ['.', '.', '#']]
-  // ], 3),
+  makeTest([
+    [
+      ['.', '#', '#'],
+      ['#', '#', '.']
+    ],
+    [
+      ['.', '#', '.'],
+      ['#', '#', '#']
+    ],
+    [
+      ['#', '#', '.'],
+      ['.', '#', '#']
+    ],
+    [
+      ['.', '#', '.'],
+      ['#', '#', '#']
+    ],
+    [
+      ['#', '#', '#', '#']
+    ],
+    [
+      ['#', '.', '.'],
+      ['#', '#', '#']
+    ],
+    [
+      ['#', '#'],
+      ['#', '#']
+    ],
+    [
+      ['#', '#', '#'],
+      ['.', '.', '#']
+    ],
+    [
+      ['.', '#', '#'],
+      ['#', '#', '.']
+    ],
+    [
+      ['.', '#', '.'],
+      ['#', '#', '#']
+    ],
+    [
+      ['#', '#', '.'],
+      ['.', '#', '#']
+    ],
+    [
+      ['.', '#', '.'],
+      ['#', '#', '#']
+    ],
+    [
+      ['#', '#', '#', '#']
+    ],
+    [
+      ['#', '.', '.'],
+      ['#', '#', '#']
+    ],
+    [
+      ['#', '#'],
+      ['#', '#']
+    ],
+    [
+      ['#', '#', '#'],
+      ['.', '.', '#']
+    ]
+  ], 3)
 
   // makeTest([
   //   [['.', '#', '.'], ['#', '#', '#']],
