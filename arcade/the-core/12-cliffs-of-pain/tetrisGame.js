@@ -9,6 +9,16 @@ const assert = require('assert')
     - objective of the game is to create horizontal lines composed of 10 blocks
     - When such a line is created, it disappears, and all lines above the deleted one move down.
     - The player receives 1 point for each deleted row.
+    - Note the way the pieces move:
+      There is an empty field with 20 rows and 10 columns, which is initially empty.
+      Random pieces appear on the field, each composed of four square blocks.
+      You can't change the piece's shape, but you can rotate it 90 degree clockwise (possibly several times)
+      and choose which columns it will appear within.
+      Once you've rotated the piece and have set its starting position,
+      it appears at the topmost row where you placed it and falls down until it can't fall any further.
+      The objective of the game is to create horizontal lines composed of 10 blocks.
+      When such a line is created, it disappears, and all lines above the deleted one move down.
+      The player receives 1 point for each deleted row.
 
   Task:
 
@@ -43,25 +53,22 @@ function tetrisGame (pieces) {
   let newLines
   let optimizedPiece
 
-  pieces.some((piece) => {
+  pieces.forEach((piece) => {
     optimizedPiece = generateOptimizedPiece(board, piece)
 
     console.log('optimizedPiece =', optimizedPiece)
 
-    if (optimizedPiece) {
-      placePiece(optimizedPiece, board)
+    placePiece(optimizedPiece, board)
 
-      newLines = calculateLines(board)
+    newLines = calculateLines(board)
 
-      if (newLines > 0) {
-        score += newLines
-        // TODO - pass `newLines` to `clearLines`
-        clearLines(board)
-      }
-
-      console.log('board after placement')
-      draw(board)
+    if (newLines > 0) {
+      score += newLines
+      clearLines(board)
     }
+
+    console.log('board after placement')
+    draw(board)
   })
 
   return score
@@ -90,109 +97,84 @@ function generateBoard () {
   return board
 }
 
-/*
-  The piece is considered to be placed optimally if:
-    - The total number of blocks in the rows this piece will occupy after
-      falling down is maximized;
-    - Among all positions with that value maximized,
-      this position requires the least number of rotations;
-    - Among all positions that require the minimum number of rotations,
-      this one is the leftmost one
-      (i.e. the leftmost block's position is as far to the left as possible).
-*/
 function generateOptimizedPiece (board, piece) {
   const rotations = [piece]
-  let doesFit = false
   let optimizedPiece = {
     rotationCount: 4,
-    blocksOccupiedInRowsCount: 11,
+    blocksOccupiedInRowsCount: 0,
     colIndex: 9
   }
 
   // TODO - if possible, don't repeat rotations
+  // hint - I think we only need to have 4 rotations for pieces that include [['#'], ['#'], ['#']], and 2 for others
   for (let i = 1; i < 4; i++) {
     rotations.push(rotate(rotations[i - 1]))
   }
 
+  let placementRow
+  let blocksOccupiedInRowsCount
+  let isOccupyingMoreBlocks
+  let isOccupyingSameBlocks
+  let hasFewerRotations
+  let hasSameRotations
+  let isFartherLeft
+
   rotations.forEach((rotation, rotationCount) => {
-    // let rows
+    for (let placementCol = 0; placementCol <= 10 - rotation[0].length; placementCol++) {
+      placementRow = findPlacementRow(placementCol, rotation, board)
 
-    // console.log('rotation', rotation)
+      if (placementRow > -1) {
+        blocksOccupiedInRowsCount = calculateBlocksInRowOccupied(rotation, board, placementRow, placementCol)
 
-    for (let r = 19; r >= rotation.length - 1; r--) {
-      for (let c = 0; c <= 10 - rotation[0].length; c++) {
-        doesFit = true
-        // rows = []
+        isOccupyingMoreBlocks = blocksOccupiedInRowsCount > optimizedPiece.blocksOccupiedInRowsCount
+        isOccupyingSameBlocks = blocksOccupiedInRowsCount === optimizedPiece.blocksOccupiedInRowsCount
 
-        let rowOffset = 0
+        hasFewerRotations = rotationCount < optimizedPiece.rotationCount
+        hasSameRotations = rotationCount === optimizedPiece.rotationCount
 
-        let pieceRow = rotation.length - 1 - rowOffset
-        while (doesFit && pieceRow >= 0) {
-          let colOffset = 0
+        isFartherLeft = placementCol < optimizedPiece.colIndex
 
-          for (let pieceCol = 0 + colOffset; pieceCol < rotation[0].length; pieceCol++) {
-            const boardRow = r - rowOffset
-            const boardCol = c + colOffset++
-
-            // TODO - this is borked
-            // rows.push(board[boardRow])
-
-            // console.log(`board cell: [${boardRow},${boardCol}]`)
-            // console.log(`piece cell: [${pieceRow},${pieceCol}]`)
-
-            /*
-              Should check:
-              board  | piece
-              [19,2] | [1,0]
-              [19,3] | [1,1]
-              [19,4] | [1,2]
-              [18,2] | [0,0]
-              [18,3] | [0,1]
-              [18,4] | [0,2]
-            */
-
-            doesFit = doesFit && !(board[boardRow][boardCol] === '#' && rotation[pieceRow][pieceCol] === '#')
-          }
-          rowOffset++
-          pieceRow--
-        }
-
-        if (doesFit) {
-          // console.log(`rotation ${rotationCount} fits at [${r},${c}]`)
-
-          // const blocksOccupiedInRowsCount = calculateBlocksInRowOccupied(rotation, rows)
-          const blocksOccupiedInRowsCount = calculateBlocksInRowOccupied(rotation, board, r, c)
-
-          // const isOccupyingFewerBlocks = blocksOccupiedInRowsCount < optimizedPiece.blocksOccupiedInRowsCount
-          const isOccupyingMoreBlocks = blocksOccupiedInRowsCount > optimizedPiece.blocksOccupiedInRowsCount
-          const hasFewerRotations = rotationCount < optimizedPiece.rotationCount
-          const isFartherLeft = c < optimizedPiece.colIndex
-
-          // console.log('isOccupyingFewerBlocks', isOccupyingFewerBlocks)
-          // console.log('hasFewerRotations', hasFewerRotations)
-          // console.log('isFartherLeft', isFartherLeft)
-
-          // if (isOccupyingFewerBlocks || hasFewerRotations || isFartherLeft) {
-          if (
-            // isOccupyingFewerBlocks ||
-            isOccupyingMoreBlocks ||
-            hasFewerRotations ||
-            (hasFewerRotations && isFartherLeft)
-          ) {
-            optimizedPiece.blocksOccupiedInRowsCount = blocksOccupiedInRowsCount
-            optimizedPiece.rotationCount = rotationCount
-            optimizedPiece.colIndex = c
-            optimizedPiece.rowIndex = r
-            optimizedPiece.body = rotation
-          }
-
-          return
+        if (
+          isOccupyingMoreBlocks ||
+          (isOccupyingSameBlocks && hasFewerRotations) ||
+          (isOccupyingSameBlocks && hasSameRotations && isFartherLeft)
+        ) {
+          optimizedPiece.blocksOccupiedInRowsCount = blocksOccupiedInRowsCount
+          optimizedPiece.rotationCount = rotationCount
+          optimizedPiece.colIndex = placementCol
+          optimizedPiece.rowIndex = placementRow
+          optimizedPiece.body = rotation
         }
       }
     }
   })
 
-  return doesFit ? optimizedPiece : false
+  return optimizedPiece
+}
+
+// Returns the row that represents the top of the piece
+function findPlacementRow (leftmostCol, piece, board) {
+  for (let r = 0; r <= 20 - piece.length; r++) {
+    if (!doesPieceFit([r, leftmostCol], piece, board)) {
+      return r - 1
+    }
+  }
+
+  return 20 - piece.length
+}
+
+function doesPieceFit (boardCoords, piece, board) {
+  const [boardRow, boardCol] = boardCoords
+
+  for (let pieceRow = 0; pieceRow < piece.length; pieceRow++) {
+    for (let pieceCol = 0; pieceCol < piece[0].length; pieceCol++) {
+      if (piece[pieceRow][pieceCol] === '#' && board[boardRow + pieceRow][boardCol + pieceCol] === '#') {
+        return false
+      }
+    }
+  }
+
+  return true
 }
 
 function rotate (piece) {
@@ -223,28 +205,6 @@ function calculateLines (board) {
   return lineCount
 }
 
-// function calculateBlocksInRowOccupied (piece, rows) {
-
-//   console.log('piece, rows', piece, rows)
-
-//   /*
-//     The total number of blocks in the rows this piece will
-//     occupy after falling down is maximized;
-
-//     TODO - So maybe we have to check each row, and record the max number
-//     of occupied cells.
-//   */
-//   let boardRowCount
-//   let pieceRowCount
-
-//   return rows.reduce((acc, val, i) => {
-//     boardRowCount = val.reduce((rAcc, block) => (block !== '.') ? rAcc + 1 : rAcc, 0)
-//     pieceRowCount = piece[i].reduce((pAcc, block) => (block !== '.') ? pAcc + 1 : pAcc, 0)
-
-//     // return acc + boardRowCount + pieceRowCount
-//     return Math.max(acc, boardRowCount + pieceRowCount)
-//   }, 0)
-// }
 function calculateBlocksInRowOccupied (piece, board, row, col) {
   const boardCopy = board.map(row => row.map(block => block + ''))
   const pieceToPlace = {
@@ -257,7 +217,7 @@ function calculateBlocksInRowOccupied (piece, board, row, col) {
 
   placePiece(pieceToPlace, boardCopy)
 
-  for (let r = 0; r < 20; r++) {
+  for (let r = row; r < row + piece.length; r++) {
     occupiedBlockCount = boardCopy[r].reduce((acc, block) => (block !== '.') ? acc + 1 : acc, 0)
     if (occupiedBlockCount > maxOccupiedBlocksCount) maxOccupiedBlocksCount = occupiedBlockCount
   }
@@ -266,16 +226,16 @@ function calculateBlocksInRowOccupied (piece, board, row, col) {
 }
 
 function placePiece ({ body, colIndex, rowIndex }, board) {
-  let pieceR = body.length - 1
+  let pieceR = 0
   let pieceC = 0
 
-  for (let r = rowIndex; r > rowIndex - body.length; r--) {
+  for (let r = rowIndex; r < rowIndex + body.length; r++) {
     pieceC = 0
     for (let c = colIndex; c < colIndex + body[0].length; c++) {
       if (body[pieceR][pieceC] === '#') board[r][c] = body[pieceR][pieceC]
       pieceC++
     }
-    pieceR--
+    pieceR++
   }
 }
 
@@ -412,25 +372,103 @@ const tests = [
   //   [['#', '#'], ['#', '#']]
   // ], 1),
 
+  // makeTest([
+  //   [
+  //     ['.', '#', '#'],
+  //     ['#', '#', '.']
+  //   ],
+  //   [
+  //     ['.', '#', '.'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '.'],
+  //     ['.', '#', '#']
+  //   ],
+  //   [
+  //     ['.', '#', '.'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '.', '.'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '#'],
+  //     ['.', '.', '#']
+  //   ],
+  //   [
+  //     ['.', '#', '#'],
+  //     ['#', '#', '.']
+  //   ],
+  //   [
+  //     ['.', '#', '.'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '.'],
+  //     ['.', '#', '#']
+  //   ],
+  //   [
+  //     ['.', '#', '.'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '.', '.'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '#'],
+  //     ['.', '.', '#']
+  //   ]
+  // ], 3),
+
+  // makeTest([
+  //   [
+  //     ['.', '#', '.'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['.', '.', '#'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '.'],
+  //     ['.', '#', '#']
+  //   ],
+  //   [
+  //     ['.', '#', '.'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['.', '.', '#'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '.'],
+  //     ['.', '#', '#']
+  //   ]
+  // ], 1),
+
+  // Hidden
   makeTest([
     [
-      ['.', '#', '#'],
-      ['#', '#', '.']
-    ],
-    [
-      ['.', '#', '.'],
-      ['#', '#', '#']
-    ],
-    [
-      ['#', '#', '.'],
-      ['.', '#', '#']
-    ],
-    [
-      ['.', '#', '.'],
-      ['#', '#', '#']
-    ],
-    [
-      ['#', '#', '#', '#']
+      ['#', '#', '#'],
+      ['.', '#', '.']
     ],
     [
       ['#', '.', '.'],
@@ -441,12 +479,69 @@ const tests = [
       ['#', '#']
     ],
     [
+      ['.', '#', '#'],
+      ['#', '#', '.']
+    ],
+    [
+      ['#', '#', '#', '#']
+    ],
+    [
+      ['.', '#', '.'],
+      ['#', '#', '#']
+    ],
+    [
+      ['#', '#', '#', '#']
+    ],
+    [
       ['#', '#', '#'],
-      ['.', '.', '#']
+      ['#', '.', '.']
+    ],
+    [
+      ['#', '#', '.'],
+      ['.', '#', '#']
+    ],
+    [
+      ['.', '#', '.'],
+      ['#', '#', '#']
+    ],
+    [
+      ['.', '.', '#'],
+      ['#', '#', '#']
+    ],
+    [
+      ['#', '#'],
+      ['#', '#']
+    ],
+    [
+      ['#', '#'],
+      ['#', '#']
+    ],
+    [
+      ['#', '#'],
+      ['#', '#']
+    ],
+    [
+      ['#', '#'],
+      ['#', '#']
     ],
     [
       ['.', '#', '#'],
       ['#', '#', '.']
+    ],
+    [
+      ['#', '#', '.'],
+      ['.', '#', '#']
+    ],
+    [
+      ['#', '#', '#', '#']
+    ],
+    [
+      ['#', '#', '#'],
+      ['.', '.', '#']
+    ],
+    [
+      ['.', '#', '.'],
+      ['#', '#', '#']
     ],
     [
       ['.', '#', '.'],
@@ -457,7 +552,7 @@ const tests = [
       ['.', '#', '#']
     ],
     [
-      ['.', '#', '.'],
+      ['.', '.', '#'],
       ['#', '#', '#']
     ],
     [
@@ -475,15 +570,150 @@ const tests = [
       ['#', '#', '#'],
       ['.', '.', '#']
     ]
-  ], 3)
+  ], 4),
 
   // makeTest([
-  //   [['.', '#', '.'], ['#', '#', '#']],
-  //   [['.', '.', '#'], ['#', '#', '#']],
-  //   [['#', '#', '.'], ['.', '#', '#']],
-  //   [['.', '#', '.'], ['#', '#', '#']],
-  //   [['.', '.', '#'], ['#', '#', '#']],
-  //   [['#', '#', '.'], ['.', '#', '#']]
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ],
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ],
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '#', '#']
+  //   ],
+  //   [
+  //     ['.', '#', '.'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ],
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ],
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '#', '#']
+  //   ],
+  //   [
+  //     ['.', '#', '.'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ],
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ],
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '#', '#']
+  //   ],
+  //   [
+  //     ['.', '#', '.'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ],
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ],
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '#', '#']
+  //   ],
+  //   [
+  //     ['.', '#', '.'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ],
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ],
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '#', '#']
+  //   ],
+  //   [
+  //     ['.', '#', '.'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ],
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ],
+  //   [
+  //     ['#', '#'],
+  //     ['#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '#', '#']
+  //   ],
+  //   [
+  //     ['.', '#', '.'],
+  //     ['#', '#', '#']
+  //   ]
+  // ], 11),
+
+  // makeTest([
+  //   [
+  //     ['.', '#', '.'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['.', '.', '#'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '.'],
+  //     ['.', '#', '#']
+  //   ],
+  //   [
+  //     ['.', '#', '.'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['.', '.', '#'],
+  //     ['#', '#', '#']
+  //   ],
+  //   [
+  //     ['#', '#', '.'],
+  //     ['.', '#', '#']
+  //   ]
   // ], 1)
 
   // Custom
