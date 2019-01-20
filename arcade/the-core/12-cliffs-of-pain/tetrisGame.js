@@ -56,8 +56,6 @@ function tetrisGame (pieces) {
   pieces.forEach((piece) => {
     optimizedPiece = generateOptimizedPiece(board, piece)
 
-    console.log('optimizedPiece =', optimizedPiece)
-
     placePiece(optimizedPiece, board)
 
     newLines = calculateLines(board)
@@ -75,40 +73,30 @@ function tetrisGame (pieces) {
 }
 
 function generateBoard () {
-  // TODO - see if this works
-  // return new Array(20).fill(new Array(10).fill('.'))
-
   const board = []
 
-  // for (let r = 0; r < 20; r++) {
-  //   board.push([])
-  //   for (let c = 0; c < 10; c++) {
-  //     board[r].push('.')
-  //   }
-  // }
-
   for (let r = 0; r < 20; r++) {
-    // board.push('.'.repeat(10).split(''))
     board.push('..........'.split(''))
   }
-
-  // console.log('board', board)
 
   return board
 }
 
 function generateOptimizedPiece (board, piece) {
   const rotations = [piece]
-  let optimizedPiece = {
-    rotationCount: 4,
-    blocksOccupiedInRowsCount: 0,
-    colIndex: 9
+  const rotationsMap = {
+    [String(piece)]: true
   }
+  let newRotation
 
-  // TODO - if possible, don't repeat rotations
-  // hint - I think we only need to have 4 rotations for pieces that include [['#'], ['#'], ['#']], and 2 for others
   for (let i = 1; i < 4; i++) {
-    rotations.push(rotate(rotations[i - 1]))
+    // rotations.push(rotate(rotations[i - 1]))
+    newRotation = rotate(rotations[rotations.length - 1])
+
+    if (!rotationsMap[String(newRotation)]) {
+      rotationsMap[String(newRotation)] = true
+      rotations.push(newRotation)
+    }
   }
 
   let placementRow
@@ -118,6 +106,11 @@ function generateOptimizedPiece (board, piece) {
   let hasFewerRotations
   let hasSameRotations
   let isFartherLeft
+  let optimizedPiece = {
+    rotationCount: 4,
+    blocksOccupiedInRowsCount: 0,
+    colIndex: 9
+  }
 
   rotations.forEach((rotation, rotationCount) => {
     for (let placementCol = 0; placementCol <= 10 - rotation[0].length; placementCol++) {
@@ -149,18 +142,22 @@ function generateOptimizedPiece (board, piece) {
     }
   })
 
+
+  console.log('optimizedPiece =', optimizedPiece)
+
+
   return optimizedPiece
 }
 
 // Returns the row that represents the top of the piece
 function findPlacementRow (leftmostCol, piece, board) {
-  for (let r = 0; r <= 20 - piece.length; r++) {
-    if (!doesPieceFit([r, leftmostCol], piece, board)) {
-      return r - 1
-    }
+  let r = 0
+
+  for (r; r <= 20 - piece.length; r++) {
+    if (!doesPieceFit([r, leftmostCol], piece, board)) break
   }
 
-  return 20 - piece.length
+  return r - 1
 }
 
 function doesPieceFit (boardCoords, piece, board) {
@@ -195,14 +192,7 @@ function rotate (piece) {
 }
 
 function calculateLines (board) {
-  // Mutate the board based on how many lines we have, and return that amount
-  let lineCount = 0
-
-  for (let r = 0; r < 20; r++) {
-    if (board[r].every(block => block !== '.')) lineCount++
-  }
-
-  return lineCount
+  return board.reduce((acc, row) => (row.every(block => block !== '.')) ? acc + 1 : acc, 0)
 }
 
 function calculateBlocksInRowOccupied (piece, board, row, col) {
@@ -232,7 +222,7 @@ function placePiece ({ body, colIndex, rowIndex }, board) {
   for (let r = rowIndex; r < rowIndex + body.length; r++) {
     pieceC = 0
     for (let c = colIndex; c < colIndex + body[0].length; c++) {
-      if (body[pieceR][pieceC] === '#') board[r][c] = body[pieceR][pieceC]
+      if (body[pieceR][pieceC] === '#') board[r][c] = '#'
       pieceC++
     }
     pieceR++
@@ -253,82 +243,6 @@ function clearLines (board) {
 function draw (board) {
   board.forEach(row => console.log(row.join(' ')))
 }
-
-// const rotations = [
-//   [
-//     // 1a
-//     [
-//       ['.', '#', '.'],
-//       ['#', '#', '#']
-//     ],
-//     [
-//       ['#', '.'],
-//       ['#', '#'],
-//       ['#', '.']
-//     ]
-//   ],
-//   // 1b
-//   [
-//     [
-//       ['#', '.'],
-//       ['#', '#'],
-//       ['#', '.']
-//     ],
-//     [
-//       ['#', '#', '#'],
-//       ['.', '#', '.']
-//     ]
-//   ],
-//   // 1c
-//   [
-//     [
-//       ['#', '#', '#'],
-//       ['.', '#', '.']
-//     ],
-//     [
-//       ['.', '#'],
-//       ['#', '#'],
-//       ['.', '#']
-//     ]
-//   ],
-
-//   // 2
-//   // 3
-//   // 4
-//   [
-//     [
-//       ['#', '#', '#', '#']
-//     ],
-//     [
-//       ['#'],
-//       ['#'],
-//       ['#'],
-//       ['#']
-//     ]
-//   ],
-//   [
-//     [
-//       ['#'],
-//       ['#'],
-//       ['#'],
-//       ['#']
-//     ],
-//     [
-//       ['#', '#', '#', '#']
-//     ]
-//   ]
-// ]
-// rotations.forEach(r => assert.deepStrictEqual(rotate(r[0]), r[1]))
-
-// console.log('\n*** all rotations work ***\n')
-
-// const expected = {
-//   rotationCount: 0,
-//   blocksOccupiedInRowsCount: 8,
-//   colIndex: 2,
-//   roW
-// }
-// assert.strictEqual(generateOptimizedPiece().colIndex, 2)
 
 const makeTest = (p, x) => ({ p, x })
 const tests = [
