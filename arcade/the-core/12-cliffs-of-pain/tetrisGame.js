@@ -51,12 +51,9 @@ function tetrisGame (pieces) {
   const board = generateBoard()
   let score = 0
   let newLines
-  let optimizedPiece
 
-  pieces.forEach((piece, i) => {
-    optimizedPiece = generateOptimizedPiece(board, piece)
-
-    placePiece(optimizedPiece, board)
+  pieces.forEach((piece) => {
+    placePiece(generateOptimizedPiece(board, piece), board)
 
     newLines = calculateLines(board)
 
@@ -82,7 +79,6 @@ function generateBoard () {
 function generateOptimizedPiece (board, piece) {
   const rotations = [piece]
 
-  // TODO - If possible, don't create unnecessary rotations
   for (let i = 1; i < 4; i++) {
     rotations.push(rotate(rotations[i - 1]))
   }
@@ -105,7 +101,7 @@ function generateOptimizedPiece (board, piece) {
       placementRow = findPlacementRow(placementCol, rotation, board)
 
       if (placementRow > -1) {
-        blocksOccupiedInRowsCount = calculateBlocksInRowOccupied(rotation, board, placementRow, placementCol)
+        blocksOccupiedInRowsCount = calculateBlocksInRowOccupied(rotation, board, placementRow)
 
         isOccupyingMoreBlocks = blocksOccupiedInRowsCount > optimizedPiece.blocksOccupiedInRowsCount
         isOccupyingSameBlocks = blocksOccupiedInRowsCount === optimizedPiece.blocksOccupiedInRowsCount
@@ -179,7 +175,7 @@ function calculateLines (board) {
   return board.reduce((acc, row) => (row.every(block => block !== '.')) ? acc + 1 : acc, 0)
 }
 
-function calculateBlocksInRowOccupied (piece, board, row, col) {
+function calculateBlocksInRowOccupied (piece, board, row) {
   let occupiedBlockCount = 0
 
   for (let r = row; r < row + piece.length; r++) {
