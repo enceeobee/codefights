@@ -209,11 +209,6 @@ function clearLines (board) {
   }
 }
 
-// TODO - delete
-function draw (board) {
-  board.forEach(row => console.log(row.join(' ')))
-}
-
 const makeTest = (p, x) => ({ p, x })
 const tests = [
   makeTest([
