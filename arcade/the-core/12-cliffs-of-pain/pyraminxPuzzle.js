@@ -38,7 +38,7 @@ function pyraminxPuzzle (faceColors, moves) {
     .reverse()
     .forEach(move => undoMove(move, puzzle))
 
-  console.log('puzzle', puzzle)
+  // console.log('puzzle', puzzle)
 
   return puzzle
 }
@@ -55,6 +55,7 @@ function createSolvedPuzzle (faceColors) {
 }
 
 function undoMove (move, puzzle) {
+  const puzzleCopy = puzzle.map(r => r.map(c => c))
   /*
     MOVES:
       * U - 120° counterclockwise turn of top tip (assuming that we're looking at the pyraminx from the top, and vertex U is the topmost);
@@ -82,13 +83,13 @@ function undoMove (move, puzzle) {
       * [A-Z] indicates vertices
       * [a-z] indicates layers
   */
-  const isClockwise = move.includes(`'`)
+  const wasClockwiseMove = move.includes(`'`)
   const isVertex = /[A-Z]/.test(move)
 
   // Remember that we're undoing a move, so move in the
-  // opposite direction of `isClockwise`
+  // opposite direction of `wasClockwiseMove`
 
-  console.log(`${move} - Is clockwise? ${isClockwise}; Is vertex? ${isVertex}`)
+  // console.log(`${move} - Was clockwise? ${wasClockwiseMove}; Is vertex? ${isVertex}`)
 
   /*
     Example: move = `R`
@@ -109,166 +110,145 @@ function undoMove (move, puzzle) {
         * left[9] = red = front[4] (before its new value)
         * bottom[0] = yellow = left[9] (before its new value)
   */
+
   const vertices = {
-    // This means "the upper vertex is comprised of front[0], left[0], and right[0]"
-    U: {
-      pieces: [0, -1, 0, 0]
-    },
-    // back[8], left[8], right[8]
-    B: {
-      pieces: [-1, 8, 8, 8]
-    },
-    // front[4], back[0], left[4]
-    L: {
-      pieces: [4, 0, 4, -1]
-    },
-    // front[8], bottom[4], no left, right[4]
-    R: {
-      pieces: [8, 4, -1, 4]
-    }
+    // This means "the upper vertex is comprised of front[0], left[4], and right[8]"
+    U: [0, -1, 4, 8],
+    // back[0], left[8], right[4]
+    B: [-1, 0, 8, 4],
+    // front[4], back[8], left[0]
+    L: [4, 8, 0, -1],
+    // front[8], bottom[4], right[0]
+    R: [8, 4, -1, 0]
   }
 
   if (isVertex) {
-    let temp = -1
+    let pieces = vertices[move[0].toUpperCase()]
+    let getIndex = -1
 
-    if (isClockwise) {
-      // TODO
+    if (wasClockwiseMove) {
+      // Rotate this vertex counterclockwise
+      for (let i = 0; i < 4; i++) {
+        if (pieces[i] < 0) continue
+        getIndex = findNewValueIndexCounterClockwise(i + 1, pieces)
+        puzzle[i][pieces[i]] = puzzleCopy[getIndex][pieces[getIndex]]
+      }
     } else {
       // Rotate this vertex clockwise
-      let { pieces } = vertices[move[0]]
-      let setIndex = 0
-      let getIndex = 1
-
-
-      console.log('pieces', pieces)
-
-
-      // for (let i = 0; i < 4; i++) {
-
-
-      //   console.log(`set ${setIndex}; get ${getIndex}`)
-
-
-      //   if (pieces[setIndex] === -1) {
-      //     // getIndex++
-      //     setIndex++
-      //     continue
-      //   } else if (pieces[getIndex] === -1) {
-      //     getIndex++
-      //     continue
-      //   }
-
-      //   if (temp === -1) temp = puzzle[setIndex][pieces[setIndex]]
-
-      //   puzzle[setIndex][pieces[setIndex]] = puzzle[getIndex][pieces[getIndex]]
-
-      //   getIndex++
-      //   setIndex++
-      // }
-      // TODO - I'm not sure this is accurate?
-      // if (puzzle[3][pieces[3]] !== -1) {
-      //   puzzle[3][pieces[3]] = temp
-      // }
-
-      // This is backwards DOH
-      // let i = 0
-      // while (i < 4) {
-
-      //   // Shit, I have this backwards...
-      //   console.log(`${i} -> ${getIndex}`)
-
-
-      //   if (pieces[i] === -1) {
-      //     i++
-      //     getIndex++
-      //     continue
-      //   }
-      //   if (pieces[getIndex] === -1) {
-      //     getIndex++
-      //     continue
-      //   }
-      //   if (temp === -1) temp = puzzle[i][pieces[i]]
-
-      //   puzzle[i][pieces[i]] = (i !== 3) ? puzzle[getIndex][pieces[getIndex]] : temp
-
-      //   i = getIndex++
-      // }
-      let i = 0
-      let temp2
-      setIndex = i + 1
-
-      while (i < 4) {
-
-        console.log(`${i} -> ${setIndex}`)
-
-        // i -> setIndex
-        // Front goes to left
-        // Left goes to right
-        // Right goes to front
-        /*
-          2,0 grabs 0,0
-          3,0 grabs 2,0 (but its original value)
-          0,0 grabs 3,0's orig val
-
-          ---or---
-
-          2,0 grabs 0,0; temp = 2,0
-          3,0 grabs temp; temp = 3,0
-          0,0 grabs temp
-        */
-        if (pieces[i] === -1) {
-          i++
-          continue
-        }
-        if (pieces[setIndex] === -1) {
-          setIndex++
-          continue
-        }
-        if (i === 3) {
-          puzzle[0][pieces[0]] = temp
-          break
-        }
-
-        if (temp === -1) {
-          temp = puzzle[setIndex][pieces[setIndex]]
-          puzzle[setIndex][pieces[setIndex]] = puzzle[i][pieces[i]]
-        } else {
-          temp2 = puzzle[setIndex][pieces[setIndex]]
-          puzzle[setIndex][pieces[setIndex]] = temp
-          temp = temp2
-        }
-        // temp = puzzle[setIndex][pieces[setIndex]]
-
-        // Both i and setIndex are legit, so set
-        // puzzle[setIndex][pieces[setIndex]] = puzzle[i][pieces[i]]
-        // puzzle[setIndex][pieces[setIndex]] = temp
-
-        i = setIndex++
+      for (let i = 0; i < 4; i++) {
+        if (pieces[i] < 0) continue
+        getIndex = findNewValueIndexClockwise(i - 1, pieces)
+        puzzle[i][pieces[i]] = puzzleCopy[getIndex][pieces[getIndex]]
       }
     }
+  } else {
+    // Move top two rows
+    // So we basically always move the vertex,
+    // then conditionally rotate the middle row
   }
+}
+
+function findNewValueIndexClockwise (start, pieces) {
+  if (start < 0) start = pieces.length - 1
+
+  for (let i = start; i >= 0; i--) {
+    if (pieces[i] >= 0) return i
+  }
+
+  return pieces.length - 1
+}
+
+function findNewValueIndexCounterClockwise (start, pieces) {
+  if (start > 3) start = 0
+
+  for (let i = start; i < 4; i++) {
+    if (pieces[i] >= 0) return i
+  }
+
+  return 0
 }
 
 const makeTest = (f, m, x) => ({ f, m, x })
 const tests = [
+  /*
+    Solved puzzle:
+    [ [ 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R' ],
+      [ 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G' ],
+      [ 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y' ],
+      [ 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O' ] ]
+  */
   // Custom:
   // Testing one move
+  //  U: [0, -1, 4, 8],
   makeTest(
     ['R', 'G', 'Y', 'O'],
     [`U`],
     [ [ 'O', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R' ],
       [ 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G' ],
-      [ 'R', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y' ],
-      [ 'Y', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O' ] ]
+      [ 'Y', 'Y', 'Y', 'Y', 'R', 'Y', 'Y', 'Y', 'Y' ],
+      [ 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'Y' ] ]
+  ),
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    [`U'`],
+    [ [ 'Y', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R' ],
+      [ 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G' ],
+      [ 'Y', 'Y', 'Y', 'Y', 'O', 'Y', 'Y', 'Y', 'Y' ],
+      [ 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'R' ] ]
   ),
 
+  // B: [-1, 0, 8, 4],
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    [`B`],
+    [ [ 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R' ],
+      [ 'O', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G' ],
+      [ 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'G' ],
+      [ 'O', 'O', 'O', 'O', 'Y', 'O', 'O', 'O', 'O' ] ]
+  ),
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    [`B'`],
+    [ [ 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R' ],
+      [ 'Y', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G' ],
+      [ 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'O' ],
+      [ 'O', 'O', 'O', 'O', 'G', 'O', 'O', 'O', 'O' ] ]
+  ),
+
+  // L: [4, 8, 0, -1],
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    [`L`],
+    [ [ 'R', 'R', 'R', 'R', 'Y', 'R', 'R', 'R', 'R' ],
+      [ 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'R' ],
+      [ 'G', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y' ],
+      [ 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O' ] ]
+  ),
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    [`L'`],
+    [ [ 'R', 'R', 'R', 'R', 'G', 'R', 'R', 'R', 'R' ],
+      [ 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'Y' ],
+      [ 'R', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y' ],
+      [ 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O' ] ]
+  ),
+
+  // R: [8, 4, -1, 0]
   makeTest(
     ['R', 'G', 'Y', 'O'],
     ['R'],
+    [ [ 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'O' ],
+      [ 'G', 'G', 'G', 'G', 'R', 'G', 'G', 'G', 'G' ],
+      [ 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y' ],
+      [ 'G', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O' ] ]
+  ),
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    [`R'`],
     [ [ 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'G' ],
       [ 'G', 'G', 'G', 'G', 'O', 'G', 'G', 'G', 'G' ],
       [ 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y' ],
-      [ 'O', 'O', 'O', 'O', 'R', 'O', 'O', 'O', 'O' ] ]
+      [ 'R', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O' ] ]
   ),
 
   // makeTest(
