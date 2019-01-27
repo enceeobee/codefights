@@ -1,35 +1,5 @@
 const assert = require('assert')
 
-/*
-  [output] array.array.char
-
-  Initial state of the puzzle.
-  result[0] should contain 9 characters corresponding to the front face,
-  result[1] - to the bottom face,
-  result[2] - to the left face and
-  result[3] - to the right face.
-
-  The colors for each face should be given in top-to-bottom and left-to-right order,
-  starting from the marked vertex (i.e. U, B, L or R),
-  assuming that this vertex is at the top of the puzzle.
-*/
-/*
-  Notes:
-    * We can move individual layers as well as corners
-    * Everything will be in the following order:
-      * Top/Up/Front
-      * Bottom/Back
-      * Left
-      * Right
-*/
-/*
-  Plan:
-    * Construct the solved puzzle
-    * Step through each move backwards
-    * Adjust the puzzle according to the move
-      * Remember to do the inverse of the given move
-    * Return puzzle
-*/
 function pyraminxPuzzle (faceColors, moves) {
   const puzzle = createSolvedPuzzle(faceColors)
 
@@ -37,8 +7,6 @@ function pyraminxPuzzle (faceColors, moves) {
     .map(m => m)
     .reverse()
     .forEach(move => undoMove(move, puzzle))
-
-  // console.log('puzzle', puzzle)
 
   return puzzle
 }
@@ -56,117 +24,108 @@ function createSolvedPuzzle (faceColors) {
 
 function undoMove (move, puzzle) {
   const puzzleCopy = puzzle.map(r => r.map(c => c))
-  /*
-    MOVES:
-      * U - 120° counterclockwise turn of top tip (assuming that we're looking at the pyraminx from the top, and vertex U is the topmost);
-      * U' - clockwise turn for the same tip;
-      * u - 120° counterclockwise turn of two upper layers;
-      * u' - clockwise turn for the same layers.
+  const wasVertex = /[A-Z]/.test(move)
+  const left = [4, 6, 5, 1, 8, 7, 3, 2, 0]
+  const right = [8, 3, 7, 6, 0, 2, 1, 5, 4]
+  const indices = { u: 0, b: 1, l: 2, r: 3 }
+  const i = indices[move[0].toLowerCase()]
 
-      * B - 120° counterclockwise turn of backmost tip (facing away from the player)
-      * B' - clockwise turn for the same tip;
-      * b - 120° counterclockwise turn of two bottom layers;
-      * b' - clockwise turn for the same layers.
+  let firstI
+  let ahead
+  let behind
 
-      * L - 120° counterclockwise turn of left tip
-      * L' - clockwise turn for the same tip;
-      * l - 120° counterclockwise turn of two left layers;
-      * l' - clockwise turn for the same layers.
-
-      * R - 120° counterclockwise turn of right tip
-      * R' - clockwise turn for the same tip;
-      * r - 120° counterclockwise turn of two right layers;
-      * r' - clockwise turn for the same layers.
-
-    Notes:
-      * `'` indicates *clockwise*
-      * [A-Z] indicates vertices
-      * [a-z] indicates layers
-  */
-  const wasClockwiseMove = move.includes(`'`)
-  const isVertex = /[A-Z]/.test(move)
-
-  // Remember that we're undoing a move, so move in the
-  // opposite direction of `wasClockwiseMove`
-
-  // console.log(`${move} - Was clockwise? ${wasClockwiseMove}; Is vertex? ${isVertex}`)
-
-  /*
-    Example: move = `R`
-      * This means 'Move the right vertex counterclockwise
-      * So we want to move the right vertex clockwise
-      * The right vertex is comprised of front[9], right[5], and bottom[5] (1-indexed)
-      * Using 0 index, the new values will be:
-        * front[8] = bottom[4]
-        * bottom[4] = right[4]
-        * right[4] = front[8] (before its new value)
-
-    Example: move = `L`
-      * This means 'Move the left vertex counterclockwise
-      * So we want to move the left vertex clockwise
-      * The left vertex is comprised of front[5], left[9], and bottom[1] (1-indexed)
-      * Using 0 index, the new values will be:
-        * front[4] = green = bottom[0]
-        * left[9] = red = front[4] (before its new value)
-        * bottom[0] = yellow = left[9] (before its new value)
-  */
-
-  const vertices = {
-    // This means "the upper vertex is comprised of front[0], left[4], and right[8]"
-    U: [0, -1, 4, 8],
-    // back[0], left[8], right[4]
-    B: [-1, 0, 8, 4],
-    // front[4], back[8], left[0]
-    L: [4, 8, 0, -1],
-    // front[8], bottom[4], right[0]
-    R: [8, 4, -1, 0]
-  }
-
-  if (isVertex) {
-    let pieces = vertices[move[0].toUpperCase()]
-    let getIndex = -1
-
-    if (wasClockwiseMove) {
-      // Rotate this vertex counterclockwise
-      for (let i = 0; i < 4; i++) {
-        if (pieces[i] < 0) continue
-        getIndex = findNewValueIndexCounterClockwise(i + 1, pieces)
-        puzzle[i][pieces[i]] = puzzleCopy[getIndex][pieces[getIndex]]
-      }
-    } else {
-      // Rotate this vertex clockwise
-      for (let i = 0; i < 4; i++) {
-        if (pieces[i] < 0) continue
-        getIndex = findNewValueIndexClockwise(i - 1, pieces)
-        puzzle[i][pieces[i]] = puzzleCopy[getIndex][pieces[getIndex]]
-      }
-    }
+  if (!move.includes(`'`)) {
+    firstI = (i + 3) - (i * 2)
+    ahead = left
+    behind = right
   } else {
-    // Move top two rows
-    // So we basically always move the vertex,
-    // then conditionally rotate the middle row
+    firstI = i < 2 ? i + 2 : i - 2
+    ahead = right
+    behind = left
+  }
+  const secondI = (firstI % 2 === 1) ? firstI - 1 : firstI + 1
+
+  for (let b = 0; b < (wasVertex ? 1 : 4); b++) {
+    puzzle[i][b] = puzzleCopy[firstI][behind[b]]
+    puzzle[firstI][behind[b]] = puzzleCopy[secondI][ahead[b]]
+    puzzle[secondI][ahead[b]] = puzzleCopy[i][b]
   }
 }
 
-function findNewValueIndexClockwise (start, pieces) {
-  if (start < 0) start = pieces.length - 1
+/*
+  Shit, ok, if we're moving a vertex, we're always dealing with:
+  curFace[0], left[4], right[8]
+  But HOW do we determine what's left or right?
+  leftIndex = curFaceIndex + 2(?)
+  rightIndex = cur + 3
 
-  for (let i = start; i >= 0; i--) {
-    if (pieces[i] >= 0) return i
-  }
+  front:
+    i = 0
+    l = 2
+    r = 3
+  back:
+    i = 1
+    l = 3
+    r = 2
+  left:
+    i = 2
+    l = 0
+    r = 1
+  right:
+    i = 3
+    l = 1
+    r = 0
 
-  return pieces.length - 1
-}
+  Or we could think about it in terms of rotation:
+  for any face:
+  front = [0,1,2,3,4,5,6,7,8]
+  left  = [4,6,5,1,8,7,3,2,0]
+  right = [8,3,7,6,0,2,1,5,4]
 
-function findNewValueIndexCounterClockwise (start, pieces) {
-  if (start > 3) start = 0
+  Let's look at vertices, doing a clockwise move
+  u/f:
+  [0][0] = [3][8] = [(faceIndex+3) - (2*faceIndex)][8] = [3-0][8]
+  [3][8] = [2][4] = [faceIndex % 2 === 1 ? faceIndex-1 : faceIndex + 1] = [3-1][4]
+  [2][4] = [0][0]
 
-  for (let i = start; i < 4; i++) {
-    if (pieces[i] >= 0) return i
-  }
+  b:
+  [1][0] = [2][8] = [(faceIndex+3) - (2*faceIndex)][8] = [4-2][8]
+  [2][8] = [3][4] = [faceIndex % 2 === 1 ? faceIndex-1 : faceIndex + 1] = [2+1][4]
+  [3][4] = [1][0]
 
-  return 0
-}
+  l:
+  [2][0] = [1][8] = [(faceIndex+3) - (2*faceIndex)][8] = [5-4][8]
+  [1][8] = [0][4] = [faceIndex % 2 === 1 ? faceIndex-1 : faceIndex + 1] = [1-1][4]
+  [0][4] = [2][0]
+
+  r:
+  [3][0] = [0][8] = [(faceIndex+3) - (2*faceIndex)][8] = [6-6][8]
+  [0][8] = [1][4] = [faceIndex % 2 === 1 ? faceIndex-1 : faceIndex + 1] = [0+1][4]
+  [1][4] = [3][0]
+
+  --- counter clockwise ---
+
+  u/f'
+  [0][0] = [2][4] = [faceIndex < 2 ? faceIndex + 2 : faceIndex - 2]
+  [2][4] = [3][8] = [faceIndex % 2 === 1 ? faceIndex-1 : faceIndex + 1]
+  [3][8] = [0][0]
+
+  b'
+  [1][0] = [3][4]
+  [3][4] = [2][8]
+  [2][8] = [1][0]
+
+  l'
+  [2][0] = [0][4]
+  [0][4] = [1][8]
+  [1][8] = [2][0]
+
+  r'
+  [3][0] = [1][4]
+  [1][4] = [0][8]
+  [0][8] = [3][0]
+
+*/
 
 const makeTest = (f, m, x) => ({ f, m, x })
 const tests = [
@@ -179,10 +138,14 @@ const tests = [
   */
   // Custom:
   // Testing one move
-  //  U: [0, -1, 4, 8],
   makeTest(
     ['R', 'G', 'Y', 'O'],
+    // The last move was 'Upper vertex counterclockwise'
+    // So we need to move upper vertex clockwise
     [`U`],
+    // [0][0] = [3][8]
+    // [3][8] = [2][4]
+    // [2][4] = [0][0]
     [ [ 'O', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R' ],
       [ 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G' ],
       [ 'Y', 'Y', 'Y', 'Y', 'R', 'Y', 'Y', 'Y', 'Y' ],
@@ -191,34 +154,47 @@ const tests = [
   makeTest(
     ['R', 'G', 'Y', 'O'],
     [`U'`],
+    // [0][0] = [2][4]
+    // [2][4] = [3][8]
+    // [3][8] = [0][0]
     [ [ 'Y', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R' ],
       [ 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G' ],
       [ 'Y', 'Y', 'Y', 'Y', 'O', 'Y', 'Y', 'Y', 'Y' ],
       [ 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'R' ] ]
   ),
 
-  // B: [-1, 0, 8, 4],
   makeTest(
     ['R', 'G', 'Y', 'O'],
     [`B`],
-    [ [ 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R' ],
-      [ 'O', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G' ],
-      [ 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'G' ],
-      [ 'O', 'O', 'O', 'O', 'Y', 'O', 'O', 'O', 'O' ] ]
-  ),
-  makeTest(
-    ['R', 'G', 'Y', 'O'],
-    [`B'`],
+    // [1][0] = [2][8]
+    // [2][8] = [3][4]
+    // [3][4] = [1][0]
     [ [ 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R' ],
       [ 'Y', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G' ],
       [ 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'O' ],
       [ 'O', 'O', 'O', 'O', 'G', 'O', 'O', 'O', 'O' ] ]
   ),
-
-  // L: [4, 8, 0, -1],
   makeTest(
     ['R', 'G', 'Y', 'O'],
+    [`B'`],
+    // [1][0] = [3][4]
+    // [3][4] = [2][8]
+    // [2][8] = [1][0]
+    [ [ 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R' ],
+      [ 'O', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G' ],
+      [ 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'G' ],
+      [ 'O', 'O', 'O', 'O', 'Y', 'O', 'O', 'O', 'O' ] ]
+  ),
+
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    // The last move was 'Left vertex counterclockwise'
+    // So we want to set the board up for that. Which means
+    // we move the left vertex clockwise
     [`L`],
+    // [2][0] = [1][8]
+    // [1][8] = [0][4]
+    // [0][4] = [2][0]
     [ [ 'R', 'R', 'R', 'R', 'Y', 'R', 'R', 'R', 'R' ],
       [ 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'R' ],
       [ 'G', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y' ],
@@ -227,99 +203,213 @@ const tests = [
   makeTest(
     ['R', 'G', 'Y', 'O'],
     [`L'`],
+    // [2][0] = [0][4]
+    // [0][4] = [1][8]
+    // [1][8] = [2][0]
     [ [ 'R', 'R', 'R', 'R', 'G', 'R', 'R', 'R', 'R' ],
       [ 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'Y' ],
       [ 'R', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y' ],
       [ 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O' ] ]
   ),
 
-  // R: [8, 4, -1, 0]
   makeTest(
     ['R', 'G', 'Y', 'O'],
-    ['R'],
-    [ [ 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'O' ],
-      [ 'G', 'G', 'G', 'G', 'R', 'G', 'G', 'G', 'G' ],
-      [ 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y' ],
-      [ 'G', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O' ] ]
-  ),
-  makeTest(
-    ['R', 'G', 'Y', 'O'],
-    [`R'`],
+    [`R`],
     [ [ 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'G' ],
       [ 'G', 'G', 'G', 'G', 'O', 'G', 'G', 'G', 'G' ],
       [ 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y' ],
       [ 'R', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O' ] ]
   ),
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    [`R'`],
+    // [3][0] = [1][4]
+    // [1][4] = [0][8]
+    // [0][8] = [3][0]
+    [ [ 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'O' ],
+      [ 'G', 'G', 'G', 'G', 'R', 'G', 'G', 'G', 'G' ],
+      [ 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y' ],
+      [ 'G', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O' ] ]
+  ),
 
-  // makeTest(
-  //   ['R', 'G', 'Y', 'O'],
-  //   ['B', "b'", "u'", 'R'],
-  //   [['Y', 'Y', 'Y', 'Y', 'R', 'R', 'R', 'R', 'G'],
-  //     ['G', 'R', 'O', 'O', 'O', 'G', 'G', 'G', 'G'],
-  //     ['Y', 'O', 'Y', 'G', 'O', 'O', 'G', 'G', 'Y'],
-  //     ['R', 'O', 'O', 'R', 'O', 'Y', 'Y', 'R', 'R']]
-  // ),
+  // ---
 
-  // makeTest(
-  //   ['R', 'G', 'Y', 'O'],
-  //   ['l', "l'"],
-  //   [['R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R'],
-  //     ['G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'],
-  //     ['Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y'],
-  //     ['O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O']]
-  // ),
+  // Row rotations
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    [`u'`],
+    [ [ 'Y', 'Y', 'Y', 'Y', 'R', 'R', 'R', 'R', 'R' ],
+      [ 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G' ],
+      [ 'Y', 'O', 'Y', 'Y', 'O', 'O', 'O', 'Y', 'Y' ],
+      [ 'O', 'O', 'O', 'R', 'O', 'O', 'R', 'R', 'R' ] ]
+  ),
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    [`u`],
+    [ [ 'O', 'O', 'O', 'O', 'R', 'R', 'R', 'R', 'R' ],
+      [ 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G' ],
+      [ 'Y', 'R', 'Y', 'Y', 'R', 'R', 'R', 'Y', 'Y' ],
+      [ 'O', 'O', 'O', 'Y', 'O', 'O', 'Y', 'Y', 'Y' ] ]
+  ),
 
-  // makeTest(
-  //   ['R', 'G', 'Y', 'O'],
-  //   ['l',
-  //     "l'",
-  //     'u',
-  //     'R',
-  //     "U'",
-  //     'L',
-  //     "R'",
-  //     "u'",
-  //     "l'",
-  //     "L'",
-  //     'r'],
-  //   [['Y', 'O', 'R', 'G', 'G', 'G', 'G', 'G', 'G'],
-  //     ['G', 'O', 'G', 'Y', 'O', 'O', 'Y', 'Y', 'Y'],
-  //     ['R', 'G', 'R', 'R', 'O', 'Y', 'Y', 'Y', 'Y'],
-  //     ['R', 'R', 'R', 'R', 'O', 'O', 'O', 'O', 'R']]
-  // ),
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    [`b`],
+    // move back clockwise
+    // back -> l; l -> r; r -> b
+    // [1][0] = [2][8]
+    // [2][8] = [3][4]
+    // [3][4] = [1][0]
+    [ [ 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R' ],
+      [ 'Y', 'Y', 'Y', 'Y', 'G', 'G', 'G', 'G', 'G' ],
+      [ 'Y', 'Y', 'Y', 'O', 'Y', 'Y', 'O', 'O', 'O' ],
+      [ 'O', 'G', 'O', 'O', 'G', 'G', 'G', 'O', 'O' ] ]
+  ),
+  // b'
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    [`b'`],
+    // [1][0] = [3][4]
+    // [3][4] = [2][8]
+    // [2][8] = [1][0]
+    [ [ 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R' ],
+      [ 'O', 'O', 'O', 'O', 'G', 'G', 'G', 'G', 'G' ],
+      [ 'Y', 'Y', 'Y', 'G', 'Y', 'Y', 'G', 'G', 'G' ],
+      [ 'O', 'Y', 'O', 'O', 'Y', 'Y', 'Y', 'O', 'O' ] ]
+  ),
 
-  // makeTest(
-  //   ['R', 'G', 'Y', 'O'],
-  //   ['r'],
-  //   [['R', 'R', 'R', 'G', 'R', 'R', 'G', 'G', 'G'],
-  //     ['G', 'O', 'G', 'G', 'O', 'O', 'O', 'G', 'G'],
-  //     ['Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y'],
-  //     ['R', 'R', 'R', 'R', 'O', 'O', 'O', 'O', 'O']]
-  // ),
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    [`l`],
+    // [2][0] = [1][8]
+    // [1][8] = [0][4]
+    // [0][4] = [2][0]
+    [ [ 'R', 'Y', 'R', 'R', 'Y', 'Y', 'Y', 'R', 'R' ],
+      [ 'G', 'G', 'G', 'R', 'G', 'G', 'R', 'R', 'R' ],
+      [ 'G', 'G', 'G', 'G', 'Y', 'Y', 'Y', 'Y', 'Y' ],
+      [ 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O' ] ]
+  ),
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    [`l'`],
+    // [2][0] = [0][4]
+    // [0][4] = [1][8]
+    // [1][8] = [2][0]
+    [ [ 'R', 'G', 'R', 'R', 'G', 'G', 'G', 'R', 'R' ],
+      [ 'G', 'G', 'G', 'Y', 'G', 'G', 'Y', 'Y', 'Y' ],
+      [ 'R', 'R', 'R', 'R', 'Y', 'Y', 'Y', 'Y', 'Y' ],
+      [ 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O' ] ]
+  ),
 
-  // makeTest(
-  //   ['A', 'B', 'C', 'D'],
-  //   ['l',
-  //     "l'",
-  //     "r'",
-  //     'r',
-  //     'u',
-  //     'U',
-  //     "u'",
-  //     "R'",
-  //     'L',
-  //     'R',
-  //     "L'",
-  //     "B'",
-  //     "U'",
-  //     'b',
-  //     'B',
-  //     "b'"],
-  //   [['A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A'],
-  //     ['B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B'],
-  //     ['C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C'],
-  //     ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D']]
-  // )
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    [`r`],
+    // [3][0] = [0][8]
+    // [0][8] = [1][4]
+    // [1][4] = [3][0]
+    [ [ 'R', 'R', 'R', 'G', 'R', 'R', 'G', 'G', 'G' ],
+      [ 'G', 'O', 'G', 'G', 'O', 'O', 'O', 'G', 'G' ],
+      [ 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y' ],
+      [ 'R', 'R', 'R', 'R', 'O', 'O', 'O', 'O', 'O' ] ]
+  ),
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    [`r'`],
+    // [3][0] = [1][4]
+    // [1][4] = [0][8]
+    // [0][8] = [3][0]
+    [ [ 'R', 'R', 'R', 'O', 'R', 'R', 'O', 'O', 'O' ],
+      [ 'G', 'R', 'G', 'G', 'R', 'R', 'R', 'G', 'G' ],
+      [ 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y' ],
+      [ 'G', 'G', 'G', 'G', 'O', 'O', 'O', 'O', 'O' ] ]
+  ),
+
+  // ---
+
+  // Combo moves
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    [`u'`, 'R'],
+    [
+      ['Y', 'Y', 'Y', 'Y', 'R', 'R', 'R', 'R', 'G'],
+      ['G', 'G', 'G', 'G', 'O', 'G', 'G', 'G', 'G'],
+      ['Y', 'O', 'Y', 'Y', 'O', 'O', 'O', 'Y', 'Y'],
+      ['R', 'O', 'O', 'R', 'O', 'O', 'R', 'R', 'R']
+    ]
+  ),
+
+  // ---
+
+  // Codefight tests
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    ['B', "b'", "u'", 'R'],
+    [['Y', 'Y', 'Y', 'Y', 'R', 'R', 'R', 'R', 'G'],
+      ['G', 'R', 'O', 'O', 'O', 'G', 'G', 'G', 'G'],
+      ['Y', 'O', 'Y', 'G', 'O', 'O', 'G', 'G', 'Y'],
+      ['R', 'O', 'O', 'R', 'O', 'Y', 'Y', 'R', 'R']]
+  ),
+
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    ['l', "l'"],
+    [['R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R'],
+      ['G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'],
+      ['Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y'],
+      ['O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O']]
+  ),
+
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    ['l',
+      "l'",
+      'u',
+      'R',
+      "U'",
+      'L',
+      "R'",
+      "u'",
+      "l'",
+      "L'",
+      'r'],
+    [['Y', 'O', 'R', 'G', 'G', 'G', 'G', 'G', 'G'],
+      ['G', 'O', 'G', 'Y', 'O', 'O', 'Y', 'Y', 'Y'],
+      ['R', 'G', 'R', 'R', 'O', 'Y', 'Y', 'Y', 'Y'],
+      ['R', 'R', 'R', 'R', 'O', 'O', 'O', 'O', 'R']]
+  ),
+
+  makeTest(
+    ['R', 'G', 'Y', 'O'],
+    ['r'],
+    [['R', 'R', 'R', 'G', 'R', 'R', 'G', 'G', 'G'],
+      ['G', 'O', 'G', 'G', 'O', 'O', 'O', 'G', 'G'],
+      ['Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y'],
+      ['R', 'R', 'R', 'R', 'O', 'O', 'O', 'O', 'O']]
+  ),
+
+  makeTest(
+    ['A', 'B', 'C', 'D'],
+    ['l',
+      "l'",
+      "r'",
+      'r',
+      'u',
+      'U',
+      "u'",
+      "R'",
+      'L',
+      'R',
+      "L'",
+      "B'",
+      "U'",
+      'b',
+      'B',
+      "b'"],
+    [['A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A'],
+      ['B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B'],
+      ['C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C'],
+      ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D']]
+  )
 ]
 
 tests.forEach(({ f, m, x }) => assert.deepStrictEqual(pyraminxPuzzle(f, m), x))
