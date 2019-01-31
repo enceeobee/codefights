@@ -1,108 +1,46 @@
 const assert = require('assert')
-// const makeTest = require('../../../makeTest')
-
-/*
-  The game starts with a 9 × 9 field with several colored balls placed on its cells
-  (there are 7 possible colors but not all colors have to be present initially).
-  The player can move one ball per turn, and they may only move a ball if
-  there is a clear path between the current position of the chosen ball and the desired destination.
-
-  Clear paths are formed by neighboring empty cells.
-
-  Two cells are neighboring if they have a common side.
-
-  The goal is to remove balls by forming lines (horizontal, vertical or diagonal)
-  of at least five balls of the same color. If the player manages to form one or more such lines,
-  the move is called successful, and the balls in those lines disappear.
-  Otherwise, the move is called unsuccessful, and three more balls appear on the field.
-*/
 
 function linesGame (field, clicks, newBalls, newBallsCoordinates) {
   let score = 0
-  /*
-    1. Create the board - nope, it's already given to us
-    2. Loop through clicks
-    3. Identify first click (ball or not ball)
-    4. Identify second click (ball or not ball)
-    5. Determine action
-      a. If the user clicks a ball and then another, the first click is ignored
-      b. If two consecutive clicks result in an incorrect move, they are ignored
-        i. move is correct if there is a clear path between the current position
-        of the chosen ball and the desired destination
-    6. Determine move's success by checking for lines
-      a. If unsuccessful (aka no lines)
-        i. Place new balls
-        ii. Check and clear lines that have formed from placing new balls
-      b. If successful, clear lines
-    7. Clearing lines:
-      a. score += A + B - 1
-        i. A is the number of lines of at least five balls
-        ii. B is the total number of balls in those lines
-  */
-
-  // Loop clicks
-  // If isBall(firstClick) && isBall(secondClick) continue
   let firstClick
   let secondClick
-  let isCorrectMove
+  let hasClearPath
   let newBallIndex = 0
 
   for (let c = 0; c < clicks.length - 1; c++) {
     firstClick = clicks[c]
     secondClick = clicks[c + 1]
 
-    // If first click is not ball - INVALID MOVE
     if (!isBall(firstClick, field)) {
       // Ignore both clicks
-      // console.log(`IGNORING ${firstClick} to ${secondClick}`)
       c++
-      isCorrectMove = false
-      // continue
+      hasClearPath = false
     } else {
-      // First click is ball
       if (isBall(secondClick, field)) {
-        // console.log(`Ignoring ${firstClick}`)
-        isCorrectMove = false
-        // continue
+        hasClearPath = false
       } else {
-        // Second click is not ball
-
-        // console.log(`possible valid move: ${firstClick} to ${secondClick}`)
-
-        isCorrectMove = isValidMove(firstClick, secondClick, field)
-
-        // console.log('isCorrectMove', String(isCorrectMove).toUpperCase())
-
-        // Increment c whether it's a valid move or not
+        hasClearPath = determineClearPath(firstClick, secondClick, field)
         c++
       }
     }
 
-    if (isCorrectMove) {
+    if (hasClearPath) {
       field[secondClick[0]][secondClick[1]] = field[firstClick[0]][firstClick[1]]
       field[firstClick[0]][firstClick[1]] = '.'
-    } else {
-      // console.log(`placing balls from index ${newBallIndex}`)
+    }
 
-      if (newBalls.length < 3) continue
+    const tempScore = scoreMove(field)
+    score += tempScore
 
+    if (hasClearPath && tempScore === 0) {
       for (let i = 0; i < 3; i++) {
-        // if (newBalls.length < newBallIndex + 1) break
-
         const [row, col] = newBallsCoordinates[newBallIndex]
         field[row][col] = newBalls[newBallIndex]
         newBallIndex++
       }
-
-      // newBallIndex++
     }
 
-    // console.log(field)
-
-    // Check and clear lines
     score += scoreMove(field)
-
-    // console.log('score', score)
   }
 
   return score
@@ -112,94 +50,43 @@ function isBall (click, field) {
   return field[click[0]][click[1]] !== '.'
 }
 
-// This will be a tough function, I'm thinking it'll be recursive
-function isValidMove (origin, destination, field, dir = '') {
-  // console.log('origin', origin, 'dest', destination, 'dir', dir)
-
-  // Infinite loop defense
-  // console.log('count', count)
-  // if (count++ > 64) return false
-
-  // Two cells are neighboring if they have a common side.
-  // const isDestinationNeighboring = Math.abs(origin[0] - destination[0]) === 1 || Math.abs(origin[1] - destination[1]) === 1
-  // const isDestinationEmpty = field[destination[0]][destination[1]] === '.'
-
-  // console.log('isDestinationNeighboring', isDestinationNeighboring)
-  // console.log('isDestinationEmpty', isDestinationEmpty)
-
-  // if (isDestinationNeighboring && isDestinationEmpty) {
-  // if (field[destination[0]][destination[1]] === '.') return true
-  // if (origin[0] === destination[0] && origin[1] === destination[1]) return true
+function determineClearPath (origin, destination, field, history = {}) {
   if (origin.join() === destination.join()) return true
+  if (history[origin.join()]) return false
+
+  history[origin.join()] = true
 
   const [originRow, originCol] = origin
-  const [destinationRow, destinationCol] = destination
   const isEmpty = ([row, col]) => field[row][col] === '.'
 
-  // Return false if neighbor is out of bounds or already occupied
-  // const isAboveValid = originRow > 0 &&
-  //   // !(originRow === 8 && dir === 'down') &&
-  //   dir !== 'down' &&
-  //   isValidMove([originRow - 1, originCol], destination, field, 'up')
-  // const isBelowValid =
-  //   originRow < 8 &&
-  //   // !(originRow === 0 && dir === 'up') &&
-  //   dir !== 'up' &&
-  //   isValidMove([originRow + 1, originCol], destination, field, 'down')
-
-  // const isAboveValid = originRow > 0 && dir !== 'down' && isEmpty([originRow - 1, originCol]) && isValidMove([originRow - 1, originCol], destination, field, 'up')
-  // const isBelowValid = originRow < 8 && dir !== 'up' && isEmpty([originRow + 1, originCol]) && isValidMove([originRow + 1, originCol], destination, field, 'down')
-  // const isLeftValid = originCol > 0 && dir !== 'right' && isEmpty([originRow, originCol - 1]) && isValidMove([originRow, originCol - 1], destination, field, 'left')
-  // const isRightValid = originCol < 8 && dir !== 'left' && isEmpty([originRow, originCol + 1]) && isValidMove([originRow, originCol + 1], destination, field, 'right')
-
-  // Ok, this time, only move in the direction of dest
   let isAboveValid = false
   let isBelowValid = false
   let isLeftValid = false
   let isRightValid = false
-  let newDest
 
-  if (destinationRow < originRow) {
-    newDest = [originRow - 1, originCol]
-    isAboveValid = originRow > 0 &&
-      dir !== 'down' &&
-      isEmpty(newDest) &&
-      isValidMove(newDest, destination, field, 'up')
-  }
-  if (destinationRow > originRow) {
-    isBelowValid = originRow < 8 &&
-      dir !== 'up' &&
-      isEmpty([originRow + 1, originCol]) &&
-      isValidMove([originRow + 1, originCol], destination, field, 'down')
-  }
-  if (destinationCol < originCol) {
-    isLeftValid = originCol > 0 &&
-      dir !== 'right' &&
-      isEmpty([originRow, originCol - 1]) &&
-      isValidMove([originRow, originCol - 1], destination, field, 'left')
-  }
-  if (destinationCol > originCol) {
-    isRightValid = originCol < 8 &&
-      dir !== 'left' &&
-      isEmpty([originRow, originCol + 1]) &&
-      isValidMove([originRow, originCol + 1], destination, field, 'right')
-  }
+  isAboveValid = originRow > 0 &&
+    isEmpty([originRow - 1, originCol]) &&
+    determineClearPath([originRow - 1, originCol], destination, field, history)
 
-  // console.log(isAboveValid, isBelowValid, isLeftValid, isRightValid)
-  // return false
+  isBelowValid = originRow < 8 &&
+    isEmpty([originRow + 1, originCol]) &&
+    determineClearPath([originRow + 1, originCol], destination, field, history)
 
-  return isAboveValid ||
-    isBelowValid ||
-    isLeftValid ||
-    isRightValid
+  isLeftValid = originCol > 0 &&
+    isEmpty([originRow, originCol - 1]) &&
+    determineClearPath([originRow, originCol - 1], destination, field, history)
+
+  isRightValid = originCol < 8 &&
+    isEmpty([originRow, originCol + 1]) &&
+    determineClearPath([originRow, originCol + 1], destination, field, history)
+
+  return isAboveValid || isBelowValid || isLeftValid || isRightValid
 }
 
 function scoreMove (field) {
   const lines = []
   let line = []
 
-  // valid colors "R", "B", "O", "V", "G", "Y" and "C"
-  // const score = (row, col, compareUnit) => {
   const score = (row, col, doTerminate) => {
     const block = field[row][col]
     const matchesFirstChar = line.length > 0 && block === field[line[0][0]][line[0][1]]
@@ -207,13 +94,7 @@ function scoreMove (field) {
     if (matchesFirstChar) {
       line.push([row, col])
 
-      // if (compareUnit === 8 && line.length > 4) {
-      if (doTerminate && line.length > 4) {
-        lines.push(line)
-        return true
-      }
-
-      return false
+      if (!doTerminate) return false
     }
 
     if (line.length > 4) {
@@ -230,7 +111,6 @@ function scoreMove (field) {
   for (let row = 0; row < 9; row++) {
     line = []
     for (let col = 0; col < 9; col++) {
-      // if (score(row, col, col)) break
       if (score(row, col, col === 8)) break
     }
   }
@@ -239,7 +119,6 @@ function scoreMove (field) {
   for (let col = 0; col < 9; col++) {
     line = []
     for (let row = 0; row < 9; row++) {
-      // if (score(row, col, row)) break
       if (score(row, col, row === 8)) break
     }
   }
@@ -248,7 +127,6 @@ function scoreMove (field) {
     line = []
     for (let r = 0; c + r < 9; r++) {
       // At top, moving right. ex. 1,3; 2,4; 3,5; 4,6; 5,7; 6,8
-      // if (score(r, c + r, c + r)) break
       if (score(r, c + r, c + r === 8)) break
     }
 
@@ -256,10 +134,6 @@ function scoreMove (field) {
     for (let r = 0; 8 - c - r > -1; r++) {
       // At top, moving left. ex. 1,7; 2,6; 3,5; 4,4; 5,3; 6;2
       // (0,7; 1,6;) 2,5; 3,4; 4,3; 5,2; 6,1; 7,0
-
-      // console.log(r, 8 - c - r)
-
-      // if (score(r, 8 - c - r, r)) break
       if (score(r, 8 - c - r, 8 - c - r === 0)) break
     }
 
@@ -268,14 +142,12 @@ function scoreMove (field) {
       for (let r = 8; c + 8 - r < 9; r--) {
         // At bottom, moving right. ex. 8,0; 7,1; 6,2; 5,3 | 8,3; 7,4; 6,5...
         // 8,3; 7,4; 6,5; 5,6; 4,7; 5, 8
-        // if (score(r, c + 8 - r, c + 8 - r)) break
         if (score(r, c + 8 - r, c + 8 - r === 8)) break
       }
 
       line = []
       for (let r = 8; r - c > -1; r--) {
         // At bottom, moving left. ex. 8,5; 7,4; 6,3; 5,2; 4,1; 3,0
-        // if (score(r, r - c, 8 + r - c)) break
         if (score(r, r - c, r - c === 0)) break
       }
     }
@@ -295,21 +167,40 @@ function clearLines (field, lines) {
   lines.forEach(line => line.forEach(([r, c]) => (field[r][c] = '.')))
 }
 
+// Clear path tests
+assert.strictEqual(
+  determineClearPath(
+    [0, 7],
+    [6, 7],
+    [
+      [ '.', '.', '.', '.', '.', '.', '.', 'G', '.' ],
+      [ 'G', '.', '.', '.', '.', '.', '.', 'G', '.' ],
+      [ '.', 'G', '.', '.', '.', '.', '.', 'G', '.' ],
+      [ '.', '.', 'G', '.', '.', '.', '.', 'G', 'G' ],
+      [ 'G', 'G', 'G', '.', 'G', 'G', '.', '.', '.' ],
+      [ '.', '.', '.', '.', 'G', '.', 'G', 'G', '.' ],
+      [ '.', '.', '.', '.', '.', 'G', '.', '.', '.' ],
+      [ '.', '.', '.', '.', 'G', '.', '.', 'G', '.' ],
+      [ '.', '.', '.', 'G', '.', '.', '.', 'G', '.' ]
+    ]),
+  true
+)
+
 // Scoring tests
-// assert.strictEqual(
-//   // a = 2; b = 11; x = 12
-//   scoreMove([
-//     ['.', 'O', '.', '.', '.', '.', '.', 'O', '.'],
-//     ['.', '.', 'O', '.', '.', '.', 'O', '.', '.'],
-//     ['.', '.', '.', 'O', '.', 'O', '.', '.', '.'],
-//     ['.', '.', '.', '.', 'O', '.', '.', '.', '.'],
-//     ['.', '.', '.', 'O', '.', 'O', '.', '.', '.'],
-//     ['.', '.', 'O', '.', '.', '.', 'O', '.', '.'],
-//     ['.', '.', '.', '.', '.', '.', '.', '.', '.'],
-//     ['.', '.', '.', '.', '.', '.', '.', '.', '.'],
-//     ['.', '.', '.', '.', '.', '.', '.', '.', '.']]),
-//   12
-// )
+assert.strictEqual(
+  // a = 2; b = 12; x = 13
+  scoreMove([
+    ['.', 'O', '.', '.', '.', '.', '.', 'O', '.'],
+    ['.', '.', 'O', '.', '.', '.', 'O', '.', '.'],
+    ['.', '.', '.', 'O', '.', 'O', '.', '.', '.'],
+    ['.', '.', '.', '.', 'O', '.', '.', '.', '.'],
+    ['.', '.', '.', 'O', '.', 'O', '.', '.', '.'],
+    ['.', '.', 'O', '.', '.', '.', 'O', '.', '.'],
+    ['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+    ['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+    ['.', '.', '.', '.', '.', '.', '.', '.', '.']]),
+  13
+)
 
 // Diag from top, center line
 assert.strictEqual(
@@ -570,28 +461,7 @@ assert.strictEqual(
   )
 )
 
-
-
-// Invalid color - todo?
-// assert.strictEqual(
-//   0,
-//   scoreMove(
-//     [
-//       ['.', 'G', '.', 'X', '.', '.', '.', '.', '.'],
-//       ['.', '.', '.', 'X', '.', '.', '.', 'V', '.'],
-//       ['.', 'O', '.', 'X', 'O', '.', '.', '.', '.'],
-//       ['.', '.', '.', 'X', 'O', '.', '.', '.', '.'],
-//       ['.', '.', '.', 'X', '.', '.', '.', '.', 'O'],
-//       ['.', '.', '.', 'X', 'O', '.', '.', '.', '.'],
-//       ['.', '.', '.', 'X', '.', '.', '.', '.', '.'],
-//       ['R', '.', '.', 'X', '.', '.', '.', 'B', 'R'],
-//       ['.', '.', 'C', 'X', '.', '.', '.', 'Y', 'O']
-//     ]
-//   )
-// )
-
 const makeTest = (f, c, nb, nbc, x) => ({ f, c, nb, nbc, x })
-
 const tests = [
   /*
   The only correct moves were:
@@ -722,6 +592,262 @@ const tests = [
     [],
     [],
     25
+  ),
+
+  // Hidden
+  makeTest(
+    [
+      ['.', 'R', 'R', 'R', '.', 'R', '.', 'G', '.'],
+      ['G', '.', '.', '.', '.', '.', '.', 'G', '.'],
+      ['.', 'G', '.', '.', '.', '.', '.', 'G', '.'],
+      ['.', '.', 'G', '.', '.', '.', '.', 'G', 'G'],
+      ['G', 'G', 'G', '.', 'G', 'G', '.', '.', '.'],
+      ['.', '.', '.', '.', 'G', '.', 'G', 'G', '.'],
+      ['.', '.', '.', '.', '.', 'G', '.', '.', '.'],
+      ['.', '.', '.', '.', 'G', '.', '.', '.', '.'],
+      ['.', '.', '.', 'G', '.', '.', '.', '.', '.']],
+    [[0, 5], [0, 4]],
+    ['G', 'G', 'R'],
+    [[4, 3], [4, 7], [0, 0]],
+    33
+  ),
+
+  makeTest(
+    [
+      ['R', 'R', 'R', 'R', '.', 'R', '.', 'G', '.'],
+      ['G', '.', '.', '.', '.', '.', '.', 'G', '.'],
+      ['.', 'G', '.', '.', '.', '.', '.', 'G', '.'],
+      ['.', '.', 'G', '.', '.', '.', '.', 'G', 'G'],
+      ['G', 'G', 'G', '.', 'G', 'G', '.', '.', '.'],
+      ['.', '.', '.', '.', 'G', '.', 'G', 'G', '.'],
+      ['.', '.', '.', '.', '.', 'G', '.', '.', '.'],
+      ['.', '.', '.', '.', 'G', '.', '.', '.', '.'],
+      ['.', '.', '.', 'G', '.', '.', '.', '.', '.']],
+    [[0, 5], [0, 4]],
+    ['G', 'G', 'R'],
+    [[4, 3], [4, 7], [0, 0]],
+    5
+  ),
+
+  makeTest(
+    [['R', 'R', 'R', 'R', '.', 'R', '.', 'G', '.'],
+      ['G', '.', '.', '.', '.', '.', '.', 'G', '.'],
+      ['.', 'G', '.', '.', '.', '.', '.', 'G', '.'],
+      ['.', '.', 'G', '.', '.', '.', '.', 'G', 'G'],
+      ['G', 'G', 'G', '.', 'G', 'G', '.', '.', '.'],
+      ['.', '.', '.', '.', 'G', '.', 'G', 'G', '.'],
+      ['.', '.', '.', '.', '.', 'G', '.', '.', '.'],
+      ['.', '.', '.', '.', 'G', '.', '.', 'G', '.'],
+      ['.', '.', '.', 'G', '.', '.', '.', 'G', '.']],
+    [[0, 5],
+      [0, 4],
+      [0, 7],
+      [6, 7]],
+    ['G',
+      'G',
+      'R'],
+    [[4, 3],
+      [4, 7],
+      [0, 0]],
+    34
+  ),
+
+  makeTest(
+    [
+      ['Y', '.', '.', '.', '.', '.', '.', '.', 'Y'],
+      ['.', 'Y', '.', '.', '.', '.', '.', '.', '.'],
+      ['.', '.', 'Y', '.', '.', '.', '.', '.', '.'],
+      ['.', '.', '.', 'Y', '.', '.', '.', '.', '.'],
+      ['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+      ['.', '.', '.', '.', '.', 'Y', '.', '.', '.'],
+      ['.', '.', '.', '.', '.', '.', 'Y', '.', '.'],
+      ['.', '.', '.', '.', '.', '.', '.', 'Y', '.'],
+      ['.', '.', '.', '.', 'Y', 'Y', 'Y', 'Y', '.']],
+    [[0, 8],
+      [8, 8],
+      [0, 0],
+      [8, 8]],
+    ['G',
+      'Y',
+      'Y'],
+    [[0, 1],
+      [4, 4],
+      [0, 0]],
+    14
+  ),
+
+  makeTest(
+    [
+      ['R', '.', '.', '.', '.', '.', '.', '.', '.'],
+      ['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+      ['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+      ['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+      ['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+      ['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+      ['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+      ['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+      ['.', '.', '.', '.', '.', '.', '.', '.', '.']],
+    [[0, 0],
+      [0, 1],
+      [0, 1],
+      [0, 0],
+      [0, 0],
+      [0, 1],
+      [0, 1],
+      [0, 0],
+      [0, 0],
+      [0, 1],
+      [0, 1],
+      [0, 0],
+      [0, 0],
+      [0, 1],
+      [0, 1],
+      [0, 0],
+      [0, 0],
+      [0, 1],
+      [0, 1],
+      [0, 0],
+      [0, 0],
+      [0, 1],
+      [0, 1],
+      [0, 0],
+      [0, 0],
+      [0, 1],
+      [0, 1],
+      [0, 0],
+      [0, 0],
+      [0, 1],
+      [0, 1],
+      [0, 0],
+      [0, 0],
+      [0, 1],
+      [0, 1],
+      [0, 0],
+      [0, 0],
+      [0, 1],
+      [0, 1],
+      [0, 0]],
+    ['G',
+      'G',
+      'G',
+      'G',
+      'R',
+      'R',
+      'R',
+      'R',
+      'Y',
+      'G',
+      'G',
+      'G',
+      'G',
+      'R',
+      'R',
+      'R',
+      'R',
+      'Y',
+      'G',
+      'G',
+      'G',
+      'G',
+      'R',
+      'R',
+      'R',
+      'R',
+      'Y',
+      'G',
+      'G',
+      'G',
+      'G',
+      'R',
+      'R',
+      'R',
+      'R',
+      'Y',
+      'O',
+      'V',
+      'O',
+      'V',
+      'O',
+      'V',
+      'O',
+      'V',
+      'C',
+      'O',
+      'V',
+      'O',
+      'V',
+      'O',
+      'V',
+      'O',
+      'V',
+      'Y',
+      'O',
+      'V',
+      'O',
+      'R',
+      'Y',
+      'C'],
+    [[1, 0],
+      [1, 1],
+      [1, 2],
+      [1, 3],
+      [1, 4],
+      [1, 5],
+      [1, 6],
+      [1, 7],
+      [1, 8],
+      [2, 0],
+      [2, 1],
+      [2, 2],
+      [2, 3],
+      [2, 4],
+      [2, 5],
+      [2, 6],
+      [2, 7],
+      [2, 8],
+      [3, 0],
+      [3, 1],
+      [3, 2],
+      [3, 3],
+      [3, 4],
+      [3, 5],
+      [3, 6],
+      [3, 7],
+      [3, 8],
+      [4, 0],
+      [4, 1],
+      [4, 2],
+      [4, 3],
+      [4, 4],
+      [4, 5],
+      [4, 6],
+      [4, 7],
+      [4, 8],
+      [5, 0],
+      [5, 1],
+      [5, 2],
+      [5, 3],
+      [5, 4],
+      [5, 5],
+      [5, 6],
+      [5, 7],
+      [5, 8],
+      [6, 0],
+      [6, 1],
+      [6, 2],
+      [6, 3],
+      [6, 4],
+      [6, 5],
+      [6, 6],
+      [6, 7],
+      [6, 8],
+      [7, 0],
+      [7, 1],
+      [7, 2],
+      [7, 3],
+      [7, 4],
+      [7, 5]],
+    0
   )
 ]
 
