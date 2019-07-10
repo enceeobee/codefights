@@ -44,7 +44,7 @@ const test = require('./test-17.json')
 
   return immediately
 */
-function findSubstrings (words, parts) {
+function findSubstrings(words, parts) {
   if (words.length === 0 || parts.length === 0) return words
 
   const partsMap = parts.reduce((acc, val) => {

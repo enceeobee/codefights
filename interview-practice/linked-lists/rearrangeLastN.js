@@ -2,7 +2,6 @@ const assert = require('assert')
 
 const ListNode = require('./ListNode')
 const create = require('./create')
-// const values = require('./values')
 
 function rearrangeLastN (l, n) {
   if (n < 1) return l
