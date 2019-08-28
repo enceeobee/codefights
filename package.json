@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "My JS codefights solutions",
   "main": "index.js",
-  "repository": "git@github.com:ncob/codefights.git",
+  "repository": "git@github.com:enceeobee/codefights.git",
   "author": "Nate Bisbee",
   "license": "MIT",
   "private": true,
@@ -14,6 +14,6 @@
   },
   "devDependencies": {
     "nodemon": "^1.19.1",
-    "standard": "^12.0.1"
+    "standard": "^14.0.2"
   }
 }
